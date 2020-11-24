@@ -10,17 +10,15 @@
 #include "Eyescanner.h"
 #include <wiringPi.h>
 
-#define LED  17
-
 int main() {
 
   std::cout << "Start Base Setup..." << std::endl;
 
   wiringPiSetupGpio();
 
-  EyeScanner eye;
+  Distance dist;
 
-  eye.measure();
+  std::cout << dist.measure() << " cm" << std::endl;
 
   return 0 ;
 

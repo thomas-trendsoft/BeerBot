@@ -1,19 +1,35 @@
 #ifndef EYESCANNER_H_
 #define EYESCANNER_H_
 
-#define EYE_ECHO    17
-#define EYE_TRIGGER 18
+#include "Distance.h"
+#include "StepMotor.h"
 
+//
+// eye scanner controller
+//
 class EyeScanner {
 
-  int calvalue;
+  // calvalue
+  int calvalue = 405;
+
+  // current step motor position
+  int position;
+
+  // distance sensor
+  Distance dist;
+
+  // step motor controller
+  StepMotor stepper;
 
   public:
     // default constructor
     EyeScanner();
 
-    // measure simple distance
-    double measure();
+    // search 0 position
+    bool calibration();
+
+    // simple min dist scan for given steps
+    double simple_scan(int steps);
 
 };
 

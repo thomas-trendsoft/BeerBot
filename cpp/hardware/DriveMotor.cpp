@@ -1,3 +1,1 @@
-class DriveMotor {
-  
-} drivemotor;
+#include "DriveMotor.h"

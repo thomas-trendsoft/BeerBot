@@ -1,0 +1,3 @@
+// the configured options and settings for Tutorial
+#define BeerBot_VERSION_MAJOR @BeerBot_VERSION_MAJOR@
+#define BeerBot_VERSION_MINOR @BeerBot_VERSION_MINOR@
