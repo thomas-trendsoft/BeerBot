@@ -15,7 +15,7 @@ def driveAround():
     print("remove calibration component")
     time.sleep(5)
 
-    mindist = eye.simple_scan(50)
+    mindist = eye.simple_scan(20)
     print("min dist: " + str(mindist))
 
     driver  = DriveMotor.DriveMotor()
