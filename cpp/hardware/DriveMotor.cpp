@@ -1,0 +1,3 @@
+class DriveMotor {
+  
+} drivemotor;
