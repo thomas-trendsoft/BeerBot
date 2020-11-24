@@ -200,77 +200,30 @@ class MPU6050:
 
     # check for if needed
     def gyro_calibration(self):
-        # init with current set values
-        x_g_off = self.get_x_gyro_offset()
-        y_g_off = self.get_y_gyro_offset()
-        z_g_off = self.get_z_gyro_offset()
+        self.set_x_gyro_offset(0)
+        self.set_y_gyro_offset(0)
+        self.set_z_gyro_offset(0)
 
-        x_g_dir = 0
-        y_g_dir = 0
-        z_g_dir = 0
-
-        x_done = False
-        y_done = False
-        z_done = False
-
-        i = 0
-
-        # update values until flip
-        while (not x_done or not y_done or not z_done):
+        x_sum = 0
+        y_sum = 0
+        z_sum = 0
+        for i in range(0,120):
             gdata = self.read_gyro_data()
+            x_sum += gdata['x']
+            y_sum += gdata['y']
+            z_sum += gdata['z']
+            time.sleep(0.1)
 
-            print("active value gyro x: " + str(gdata['x']) + " / " + str(x_g_off))
-            print("active value gyro y: " + str(gdata['y']) + " / " + str(y_g_off))
-            print("active value gyro z: " + str(gdata['z']) + " / " + str(z_g_off))
+        print("means: " + str(x_sum / 100.0) + "/" + str(y_sum / 100.0) + "/" + str(z_sum / 100.0))
+        x_off = x_sum / 400.0 # 100 buffer + 4 value offset
+        y_off = y_sum / 400.0
+        z_off = z_sum / 400.0
 
-            # update x offset and check flip
-            if (gdata['x'] > 0):
-                x_g_off -= 1
-                if (i > 10 and x_g_dir != -1):
-                    x_done = True
-                x_g_dir  = -1
+        print("cal values: " + str(x_off) + "/" + str(y_off) + "/" + str(z_off))
 
-            if (gdata['x'] < 0):
-                x_g_off += 1
-                if (i > 10 and x_g_dir != 1):
-                    x_done = True
-                x_g_dir  = 1
-
-            # update y offset
-            if (gdata['y'] > 0):
-                y_g_off -= 1
-                if (i > 10 and y_g_dir != -1):
-                    y_done = True
-                y_g_dir  = -1
-
-            if (gdata['y'] < 0):
-                y_g_off += 1
-                if (i > 10 and y_g_dir != 1):
-                    y_done = True
-                y_g_dir  = 1
-
-            # update z offset
-            if (gdata['z'] > 0):
-                z_g_off -= 1
-                if (i > 10 and z_g_dir != -1):
-                    z_done = True
-                z_g_dir  = -1
-
-            if (gdata['z'] < 0):
-                z_g_off += 1
-                if (i > 10 and z_g_dir != 1):
-                    z_done = True
-                z_g_dir  = 1
-
-
-            self.set_x_gyro_offset(x_g_off)
-            self.set_y_gyro_offset(y_g_off)
-            self.set_z_gyro_offset(z_g_off)
-            i += 1
-            time.sleep(0.2)
-
-        print("gyro calibration done")
-
+        self.set_x_gyro_useroffset(int(x_off))
+        self.set_y_gyro_useroffset(int(y_off))
+        self.set_z_gyro_useroffset(int(z_off))
 
 
     # init gyro interface

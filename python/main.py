@@ -7,6 +7,9 @@ import EyeScanner
 import time
 import math
 
+#
+# simple drive around first try
+#
 def driveAround():
     print("eye calibration: " + str(eye.calibrate()))
     print("remove calibration component")
@@ -43,26 +46,11 @@ def driveAround():
             driver.stop()
             mindist = eye.simple_scan(20)
 
-if __name__ == "__main__":
-    # setup gpio basic
-    GPIO.setmode(GPIO.BCM)
 
-    eye  = EyeScanner.EyeScanner()
-    gyro = GyroSensor.MPU6050(0x68)
-
-    print("test con: " + str(gyro.testConnection()))
-    print("read temp: " + str(gyro.get_temperature()))
-
-    time.sleep(12)
-    print("start calibration")
-    print(str(gyro.get_x_gyro_offset()))
-    print(str(gyro.get_y_gyro_offset()))
-    print(str(gyro.get_z_gyro_offset()))
-
-    gyro.set_x_gyro_useroffset(325)
-    gyro.set_y_gyro_useroffset(197)
-    gyro.set_z_gyro_useroffset(254)
-
+#
+# test the gyro calibration
+#
+def testGyro():
     x_sum = 0
     y_sum = 0
     z_sum = 0
@@ -72,12 +60,31 @@ if __name__ == "__main__":
         x_sum += data['x']
         y_sum += data['y']
         z_sum += data['z']
-        time.sleep(0.2)
+        time.sleep(0.1)
 
     df = 0.00763359
 
     print(str(x_sum) + "/" + str(y_sum) + "/" + str(z_sum))
     print(str(x_sum*df) + "/" + str(y_sum*df) + "/" + str(z_sum*df))
 
+# main entry
+if __name__ == "__main__":
+    # setup gpio basic
+    #GPIO.setmode(GPIO.BCM)
+
+    gyro = GyroSensor.MPU6050(0x68)
+
+    print("test con: " + str(gyro.testConnection()))
+    print("read temp: " + str(gyro.get_temperature()))
+
+    time.sleep(15)
+    print("start calibration")
+    #gyro.gyro_calibration()
+    gyro.set_x_gyro_useroffset(73)
+    gyro.set_y_gyro_useroffset(0)
+    gyro.set_z_gyro_useroffset(7)
+    print("start test")
+    testGyro()
+
     # clean up gpios
-    GPIO.cleanup()
+    #GPIO.cleanup()
