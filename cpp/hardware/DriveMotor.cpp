@@ -22,8 +22,8 @@ DriveMotor::DriveMotor() {
   digitalWrite(DCM_IN4,LOW);
 
   // init pwm pins
-  softPwmCreate (DCM_EN1, 0, 50);
-  softPwmCreate (DCM_EN2, 0, 50);
+  softPwmCreate (DCM_EN1, 40, 100);
+  softPwmCreate (DCM_EN2, 40, 100);
 
 }
 
