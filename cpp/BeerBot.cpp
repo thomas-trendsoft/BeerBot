@@ -30,18 +30,18 @@ void BeerBot::driveAround() {
   for (int i=0;i<5;i++) {
 
     // forward until blocked
-    while (mindist > 24.0) {
+    while (mindist > 28.0) {
       std::cout << mindist << std::endl;
       // step forward depends on mindist
       this->driver.forward();
       waitval = (long)(mindist);
       if (waitval < 300) waitval = 300;
       std::cout << "wait forward: " << waitval << std::endl;
-      delay(waitval * 8);
+      delay((long)(waitval * 1.4));
 
       // stop motors
       this->driver.stop();
-      delay(100);
+      delay(10);
 
       // check next distance value
       mindist = this->eye.simple_scan(20);
@@ -50,13 +50,13 @@ void BeerBot::driveAround() {
     std::cout << "turn around" << std::endl;
     // stop on block
     this->driver.backward();
-    delay(300);
+    delay(250);
     this->driver.stop();
 
     // turn until enough space for next steps
-    while (mindist < 60.0) {
+    while (mindist < 50.0) {
       this->driver.turn_left();
-      delay(350);
+      delay(250);
       this->driver.stop();
       mindist = eye.simple_scan(20);
     } // turn to space

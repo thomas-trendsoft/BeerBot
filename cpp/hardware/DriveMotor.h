@@ -12,6 +12,11 @@
 // driving motor Controller
 //
 class DriveMotor {
+
+  int dcm1val = 40; // left motor
+
+  int dcm2val = 55; // right motor
+
   public:
     // default constructor
     DriveMotor();

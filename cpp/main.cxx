@@ -17,10 +17,14 @@ int main() {
 
   wiringPiSetupGpio();
 
-  BeerBot bb = BeerBot();
+  //MPU6050 mpu = MPU6050();
+  //mpu.dmpInitialize();
 
-  bb.initialize();
-  bb.driveAround();
+  //std::cout << "measurement: " << mpu.testConnection() << std::endl;
+
+  BeerBot bbot = BeerBot();
+  bbot.initialize();
+  bbot.driveAround();
 
   return 0 ;
 

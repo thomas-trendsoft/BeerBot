@@ -49,10 +49,12 @@ THE SOFTWARE.
 #define FALSE	(0==1)
 #endif
 
+#define DEVPATH "/dev/i2c-1"
+
 class I2Cdev {
     public:
         I2Cdev();
-        
+
         static int8_t readBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8_t *data, uint16_t timeout=I2Cdev::readTimeout);
         static int8_t readBitW(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint16_t *data, uint16_t timeout=I2Cdev::readTimeout);
         static int8_t readBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t *data, uint16_t timeout=I2Cdev::readTimeout);

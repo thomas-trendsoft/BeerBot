@@ -22,17 +22,22 @@ DriveMotor::DriveMotor() {
   digitalWrite(DCM_IN4,LOW);
 
   // init pwm pins
-  softPwmCreate (DCM_EN1, 40, 100);
-  softPwmCreate (DCM_EN2, 40, 100);
+  softPwmCreate (DCM_EN1, 0, 100);
+  softPwmCreate (DCM_EN2, 0, 100);
 
 }
 
 // backward driving
 void DriveMotor::backward() {
+
+  softPwmWrite (DCM_EN1, this->dcm1val);
+  softPwmWrite (DCM_EN2, this->dcm2val);
+
   digitalWrite(DCM_IN1,LOW);
   digitalWrite(DCM_IN2,HIGH);
   digitalWrite(DCM_IN3,LOW);
   digitalWrite(DCM_IN4,HIGH);
+
 }
 
 
@@ -40,6 +45,9 @@ void DriveMotor::backward() {
 // forward driving
 //
 void DriveMotor::forward() {
+  softPwmWrite (DCM_EN1, this->dcm1val);
+  softPwmWrite (DCM_EN2, this->dcm2val);
+
   digitalWrite(DCM_IN1,HIGH);
   digitalWrite(DCM_IN2,LOW);
   digitalWrite(DCM_IN3,HIGH);
@@ -48,6 +56,9 @@ void DriveMotor::forward() {
 
 // turn left
 void DriveMotor::turn_left() {
+  softPwmWrite (DCM_EN1, this->dcm1val);
+  softPwmWrite (DCM_EN2, this->dcm2val);
+
   digitalWrite(DCM_IN1,LOW);
   digitalWrite(DCM_IN2,HIGH);
   digitalWrite(DCM_IN3,HIGH);
@@ -56,6 +67,9 @@ void DriveMotor::turn_left() {
 
 // turn right
 void DriveMotor::turn_right() {
+  softPwmWrite (DCM_EN1, this->dcm1val);
+  softPwmWrite (DCM_EN2, this->dcm2val);
+
   digitalWrite(DCM_IN1,HIGH);
   digitalWrite(DCM_IN2,LOW);
   digitalWrite(DCM_IN3,LOW);
@@ -66,6 +80,9 @@ void DriveMotor::turn_right() {
 // stop motor output
 //
 void DriveMotor::stop() {
+  softPwmWrite (DCM_EN1, 0);
+  softPwmWrite (DCM_EN2, 0);
+
   digitalWrite(DCM_IN1,LOW);
   digitalWrite(DCM_IN2,LOW);
   digitalWrite(DCM_IN3,LOW);
