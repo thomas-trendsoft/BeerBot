@@ -70,21 +70,10 @@ def testGyro():
 # main entry
 if __name__ == "__main__":
     # setup gpio basic
-    #GPIO.setmode(GPIO.BCM)
+    GPIO.setmode(GPIO.BCM)
 
-    gyro = GyroSensor.MPU6050(0x68)
+    step = Stepper.Stepper()
+    step.rotate(50,1)
+    step.rotate(50,-1)
 
-    print("test con: " + str(gyro.testConnection()))
-    print("read temp: " + str(gyro.get_temperature()))
-
-    time.sleep(15)
-    print("start calibration")
-    #gyro.gyro_calibration()
-    gyro.set_x_gyro_useroffset(73)
-    gyro.set_y_gyro_useroffset(0)
-    gyro.set_z_gyro_useroffset(7)
-    print("start test")
-    testGyro()
-
-    # clean up gpios
-    #GPIO.cleanup()
+    GPIO.cleanup()

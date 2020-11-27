@@ -26,6 +26,9 @@ class StepMotor {
     // rotate motor in given dir for steps
     void rotate(int steps,int dir);
 
+    // stop voltage on step motor magnets
+    void pause();
+
 };
 
 #endif

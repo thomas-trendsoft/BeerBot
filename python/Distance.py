@@ -32,6 +32,8 @@ class Distance:
 
         # Zeit Differenz zwischen Start und Ankunft
         TimeElapsed = StopZeit - StartZeit
+        print("time: " + str(TimeElapsed))
+        
         # mit der Schallgeschwindigkeit (34300 cm/s) multiplizieren
         # und durch 2 teilen, da hin und zurueck
         distanz = (TimeElapsed * 34300) / 2

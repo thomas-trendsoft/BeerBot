@@ -1,4 +1,5 @@
 #include <chrono>
+#include <iostream>
 #include <wiringPi.h>
 #include "Distance.h"
 
@@ -21,7 +22,7 @@ double Distance::measure() {
 
   // start measure signal
   digitalWrite (DIST_TRIGGER,1);
-  delay(100);
+  delay(10);
   digitalWrite (DIST_TRIGGER,0);
 
   // save time stamp
@@ -40,11 +41,9 @@ double Distance::measure() {
     ev  = digitalRead(DIST_ECHO);
   } while (ev == 1);
 
-  long elapsed = duration_cast<std::chrono::milliseconds>(end - start).count();
-
   // mit der Schallgeschwindigkeit (34300 cm/s) multiplizieren
   // und durch 2 teilen, da hin und zurueck
-  double distance = (elapsed * 34300) / 2.0;
+  double distance = ((end - start).count() * 0.0000343) / 2.0;
 
   return distance;
 }

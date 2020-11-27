@@ -31,7 +31,7 @@ void BeerBot::driveAround() {
 
     // forward until blocked
     while (mindist > 24.0) {
-
+      std::cout << mindist << std::endl;
       // step forward depends on mindist
       this->driver.forward();
       waitval = (long)(mindist * 90);
@@ -46,6 +46,7 @@ void BeerBot::driveAround() {
       mindist = this->eye.simple_scan(20);
     } // forward until blocked
 
+    std::cout << "turn around" << std::endl;
     // stop on block
     this->driver.backward();
     delay(300);

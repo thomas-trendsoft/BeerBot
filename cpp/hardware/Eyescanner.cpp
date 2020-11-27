@@ -17,6 +17,7 @@ bool EyeScanner::calibration() {
     check = this->dist.measure();
   }
   this->stepper.rotate(this->calvalue,1);
+  this->stepper.pause();
   position = 0;
   return i < 200;
 }
@@ -35,5 +36,6 @@ double EyeScanner::simple_scan(int steps) {
     this->stepper.rotate(10,-1);
   }
   this->stepper.rotate(steps*10,1);
+  this->stepper.pause();
   return minval;
 }
