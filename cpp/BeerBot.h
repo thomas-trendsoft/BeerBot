@@ -12,9 +12,7 @@ class BeerBot {
 
   EyeScanner eye;
 
-  DriveMotor driver;
-
-  DriveController dctrl;
+  DriveController driver;
 
   public:
     // default constructor
