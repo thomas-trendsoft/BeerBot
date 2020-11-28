@@ -3,6 +3,7 @@
 
 #include "Eyescanner.h"
 #include "DriveMotor.h"
+#include "DriveController.h"
 
 //
 // main controller for the beerbot
@@ -12,6 +13,8 @@ class BeerBot {
   EyeScanner eye;
 
   DriveMotor driver;
+
+  DriveController dctrl;
 
   public:
     // default constructor

@@ -4,6 +4,7 @@
 
 // default constructor
 StepMotor::StepMotor() {
+  this->seqidx = 0;
   // setup gpio pins
   pinMode(STEPPIN0,OUTPUT);
   pinMode(STEPPIN1,OUTPUT);

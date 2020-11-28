@@ -22,7 +22,7 @@ double Distance::measure() {
 
   // start measure signal
   digitalWrite (DIST_TRIGGER,1);
-  delay(10);
+  delay(5);
   digitalWrite (DIST_TRIGGER,0);
 
   // save time stamp

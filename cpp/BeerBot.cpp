@@ -32,12 +32,14 @@ void BeerBot::driveAround() {
     // forward until blocked
     while (mindist > 28.0) {
       std::cout << mindist << std::endl;
+      dctrl.showStatus();
+      
       // step forward depends on mindist
       this->driver.forward();
       waitval = (long)(mindist);
       if (waitval < 300) waitval = 300;
       std::cout << "wait forward: " << waitval << std::endl;
-      delay((long)(waitval * 1.4));
+      delay((long)(waitval * 1.8));
 
       // stop motors
       this->driver.stop();
