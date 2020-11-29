@@ -15,7 +15,7 @@ class DriveMotor {
 
   int dcm1val = 32; // left motor
 
-  int dcm2val = 32; // right motor
+  int dcm2val = 34; // right motor
 
   public:
     // default constructor
@@ -36,7 +36,17 @@ class DriveMotor {
     // turn right
     void turn_right();
 
+    // update motor output value for motor 1
+    void setMotorLeftValue(int val);
 
+    // update motor output value for motor 2
+    void setMotorRightValue(int val);
+
+    // motor output value for motor 1
+    int getMotorLeftValue();
+
+    // motor output value for motor 2
+    int getMotorRightValue();
 };
 
 #endif

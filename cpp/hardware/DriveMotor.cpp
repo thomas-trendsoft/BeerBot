@@ -27,6 +27,29 @@ DriveMotor::DriveMotor() {
 
 }
 
+// update motor output value for motor 1
+void DriveMotor::setMotorLeftValue(int val) {
+  this->dcm1val = val;
+  softPwmWrite (DCM_EN1, this->dcm1val);
+}
+
+// update motor output value for motor 2
+void DriveMotor::setMotorRightValue(int val) {
+  this->dcm2val = val;
+  softPwmWrite (DCM_EN2, this->dcm2val);
+}
+
+// motor output value for motor 1
+int DriveMotor::getMotorLeftValue() {
+  return this->dcm1val;
+}
+
+// motor output value for motor 2
+int DriveMotor::getMotorRightValue() {
+  return this->dcm2val;
+}
+
+
 // backward driving
 void DriveMotor::backward() {
 
