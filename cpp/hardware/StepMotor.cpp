@@ -36,7 +36,7 @@ void StepMotor::rotate(int steps,int dir) {
     if (this->seqidx < 0) this->seqidx = 4 - 1;
     if (this->seqidx > 3) this->seqidx = 0;
     // wait for step
-    delay(5);
+    delay(3);
   }
 
 }

@@ -12,7 +12,7 @@ BeerBot::BeerBot() {
 void BeerBot::initialize() {
   std::cout << "initialize beerbot..." << std::endl;
 
-  driver.initialize();
+  driver.initialize(&this->eye);
 
   std::cout << std::endl << "start eye calibration..." << std::endl;
   this->eye.calibration();

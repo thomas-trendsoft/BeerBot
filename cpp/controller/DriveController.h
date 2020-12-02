@@ -3,6 +3,10 @@
 
 #define OUTPUT_READABLE_YAWPITCHROLL
 
+#define WHEEL_LEN 23.0
+#define ODO_TICKS 38.0
+#define ODO_TICK_LEN (WHEEL_LEN / ODO_TICKS)
+
 #include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
@@ -10,7 +14,9 @@
 #include <math.h>
 #include <chrono>
 #include <wiringPi.h>
+#include "helper_3dmath.h"
 #include "MPU6050.h"
+#include "Eyescanner.h"
 #include "DriveMotor.h"
 #include "OdoMeter.h"
 
@@ -23,11 +29,11 @@ class DriveController {
 
   MPU6050 mpu;
 
-  // odo meter right
-  OdoMeter odo1 = OdoMeter(5);
-
   // odo meter left
-  OdoMeter odo2 = OdoMeter(6);
+  OdoMeter odo_left = OdoMeter(5);
+
+  // odo meter right
+  OdoMeter odo_right = OdoMeter(6);
 
   // motors interface
   DriveMotor motors;
@@ -47,14 +53,15 @@ class DriveController {
   // FIFO storage buffer
   uint8_t fifoBuffer[64];
 
-  // last position update
-  system_clock::time_point pos_update;
-
   // estimated x position
-  long pos_x;
+  double pos_x;
 
   // estimated y position
-  long pos_y;
+  double pos_y;
+
+  int last_odo_diff;
+
+  EyeScanner* eye;
 
 
 public:
@@ -62,7 +69,7 @@ public:
   DriveController();
 
   // init driver controller
-  void initialize();
+  void initialize(EyeScanner* eye);
 
   // try to be straight
   void balance();

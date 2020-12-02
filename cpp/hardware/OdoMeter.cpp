@@ -13,10 +13,10 @@ void odometer2ISR(void) {
 
 OdoMeter::OdoMeter(int pin) {
   if (pin == 5) {
-    wiringPiISR(pin,INT_EDGE_FALLING,&odometer1ISR);
+    wiringPiISR(pin,INT_EDGE_BOTH,&odometer1ISR);
     this->index = 0;
   } else if (pin == 6) {
-    wiringPiISR(pin,INT_EDGE_FALLING,&odometer2ISR);
+    wiringPiISR(pin,INT_EDGE_BOTH,&odometer2ISR);
     this->index = 1;
   } else {
     this->index = -1;

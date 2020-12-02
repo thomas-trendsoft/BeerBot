@@ -22,6 +22,26 @@ bool EyeScanner::calibration() {
   return i < 200;
 }
 
+// simple distance measurement
+double EyeScanner::distance() {
+  return this->dist.measure();
+}
+
+// simple min dist scan for given steps
+double* EyeScanner::scan(int steps) {
+  double* val = new double[steps*2];
+
+  this->stepper.rotate(steps*10,1);
+  for (int i=(0-steps);i<steps;i++) {
+    val[i+steps] = this->dist.measure();
+    this->stepper.rotate(10,-1);
+  }
+  this->stepper.rotate(steps*10,1);
+  this->stepper.pause();
+  
+  return val;
+}
+
 // simple min dist scan for given steps
 double EyeScanner::simple_scan(int steps) {
   double minval = 2000.0;

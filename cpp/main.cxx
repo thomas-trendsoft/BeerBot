@@ -15,14 +15,24 @@ int main() {
 
   wiringPiSetupGpio();
 
-  //MPU6050 mpu = MPU6050();
-  //mpu.dmpInitialize();
+  //BeerBot bbot = BeerBot();
+  //bbot.initialize();
+  //bbot.driveAround();
 
-  //std::cout << "measurement: " << mpu.testConnection() << std::endl;
+  DriveController driver = DriveController();
+  EyeScanner      eye    = EyeScanner();
 
-  BeerBot bbot = BeerBot();
-  bbot.initialize();
-  bbot.driveAround();
+  driver.initialize(&eye);
+
+  std::cout << "start demo.." << std::endl;
+
+  double* data = eye.scan(25);
+
+  for (int i=0;i<50;i++) {
+    std::cout << data[i] << std::endl;
+  }
+
+  delete data;
 
   return 0 ;
 

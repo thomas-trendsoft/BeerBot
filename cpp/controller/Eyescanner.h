@@ -4,6 +4,7 @@
 #include "Distance.h"
 #include "StepMotor.h"
 
+
 //
 // eye scanner controller
 //
@@ -28,8 +29,14 @@ class EyeScanner {
     // search 0 position
     bool calibration();
 
+    // simple distance measurement
+    double distance();
+
     // simple min dist scan for given steps
     double simple_scan(int steps);
+
+    // create a scan array for current position
+    double* scan(int steps);
 
 };
 

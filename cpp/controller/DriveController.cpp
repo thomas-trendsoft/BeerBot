@@ -15,13 +15,19 @@ DriveController::DriveController() {
   this->dmpReady   = false;
   this->pos_x      = 0;
   this->pos_y      = 0;
-  this->pos_update = system_clock::now();
 }
 
 //
 // hardware init routine
 //
-void DriveController::initialize() {
+void DriveController::initialize(EyeScanner* eye) {
+
+  // save eye scanner ref
+  this->eye = eye;
+
+  this->pos_x = 0;
+  this->pos_y = 0;
+
   // initialize device
   printf("Initializing MPU6050 devices...\n");
   mpu.initialize();
@@ -43,6 +49,8 @@ void DriveController::initialize() {
       printf("DMP ready!\n");
       dmpReady = true;
       packetSize = mpu.dmpGetFIFOPacketSize();
+      std::cout << "y acc offset: " << mpu.getYAccelOffset() << std::endl;
+
   } else {
       // ERROR!
       // 1 = initial memory load failed
@@ -50,25 +58,21 @@ void DriveController::initialize() {
       // (if it's going to break, usually the code will be 1)
       printf("DMP Initialization failed (code %d)\n", mpuStatus);
   }
+
 }
 
 //
 // show current position information
 //
 void DriveController::showStatus() {
-  std::cout << "odo1: " << odo1.count() << std::endl;
-  std::cout << "odo2: " << odo2.count() << std::endl;
+  std::cout << "odo (l/r): " << odo_left.count() << "/" << odo_right.count() << std::endl;
 }
 
 void DriveController::updatePosition() {
   // orientation/motion vars
-  Quaternion q;           // [w, x, y, z]         quaternion container
-  VectorInt16 aa;         // [x, y, z]            accel sensor measurements
-  VectorInt16 aaReal;     // [x, y, z]            gravity-free accel sensor measurements
+  Quaternion  q;           // [w, x, y, z]         quaternion container
   VectorFloat gravity;    // [x, y, z]            gravity vector
-  float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
-
-  system_clock::time_point start = system_clock::now();
+  float       ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 
   int fifoCount = mpu.getFIFOCount();
 
@@ -79,22 +83,30 @@ void DriveController::updatePosition() {
 
   // otherwise, check for DMP data ready interrupt (this should happen frequently)
   } else if (fifoCount >= 42) {
+      // work update position steps from fifo buffer
       while (fifoCount >= 42) {
         // read a packet from FIFO
         mpu.getFIFOBytes(fifoBuffer, packetSize);
 
+        int pos = std::min(odo_left.count(),odo_right.count());
+
         // display Euler angles in degrees
         mpu.dmpGetQuaternion(&q, fifoBuffer);
-        mpu.dmpGetAccel(&aa, fifoBuffer);
         mpu.dmpGetGravity(&gravity, &q);
         mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-        mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
-        //std::cout << pos_update << std::endl;
-        printf("ypr  %7.2f %7.2f %7.2f    \n", ypr[0] * 180/M_PI, ypr[1] * 180/M_PI, ypr[2] * 180/M_PI);
-        printf("areal %6d %6d %6d    \n", aaReal.x, aaReal.y, aaReal.z);
-        printf("%.2f dirvec",sqrt(pow(aaReal.x,2.0)+pow(aaReal.y,2.0)));
-        printf("\n");
-        pos_update = start;
+
+        double c = cos(ypr[0]);
+        double s = sin(ypr[0]);
+        double delta = pos - this->last_odo_diff;
+        this->last_odo_diff = pos;
+
+        double dx = c * delta * ODO_TICK_LEN;
+        double dy = s * delta * ODO_TICK_LEN;
+
+        this->pos_x += dx;
+        this->pos_y += dy;
+        std::cout << "pos: " << this->pos_x << ":" << this->pos_y << ":" << (ypr[0]*180.0/M_PI) << "/" << delta << std::endl;
+
         fifoCount = mpu.getFIFOCount();
       }
   }
@@ -103,22 +115,22 @@ void DriveController::updatePosition() {
 void DriveController::balance() {
   int lval = motors.getMotorLeftValue();
   int rval = motors.getMotorRightValue();
-  int delta = odo1.count() - odo2.count();
+  int delta = odo_left.count() - odo_right.count();
 
-  std::cout << "u:" << delta << "/" << lval << ":" << rval << std::endl;
-
+  std::cout << "u:" << delta << "/" << this->last_odo_diff << " - " << lval << ":" << rval << std::endl;
+  std::cout << "o l/r: " << odo_left.count() << "/" << odo_right.count() << std::endl;
   // test stay forward
   if (delta > 0) {
-      if (lval < 50) {
-        motors.setMotorLeftValue(lval+1);
-      } else {
-        motors.setMotorRightValue(rval-1);
+      if (lval > 35) {
+        motors.setMotorLeftValue(lval-(2.0 * delta));
+      } else if (rval <= 70) {
+        motors.setMotorRightValue(rval+(2.0 * delta));
       }
   } else if (delta < 0) {
-    if (rval < 50) {
-      motors.setMotorRightValue(rval+1);
-    } else {
-      motors.setMotorLeftValue(lval-1);
+    if (rval > 35) {
+      motors.setMotorRightValue(rval+(2.0 * delta));
+    } else if (lval <= 70) {
+      motors.setMotorLeftValue(lval-(2.0 * delta));
     }
   }
 }
@@ -127,25 +139,32 @@ void DriveController::balance() {
 // drive forward for "dist" steps
 //
 void DriveController::forward(int dist) {
-  odo1.reset();
-  odo2.reset();
-  int delta;
+  odo_left.reset();
+  odo_right.reset();
 
-  std::cout << "try forward: " << dist << std::endl;
-
+  mpu.resetFIFO();
+  this->last_odo_diff = 0;
   motors.forward();
-  int state = 4;
-  while (odo1.count() < dist && odo2.count() < dist) {
+
+  int    state = 4;
+  double maxdist = this->eye->distance();
+  std::cout << "try forward: " << dist << "/" << maxdist << std::endl;
+  while (maxdist > 12.0 && odo_left.count() < dist && odo_right.count() < dist) {
     delay(2);
-    int lstate = odo1.count() + odo2.count();
+    std::cout << ".";
+    int lstate = odo_left.count() + odo_right.count();
     if (lstate > state) {
       //this->balance();
       this->updatePosition();
-      state = lstate + 5;
+      maxdist = this->eye->distance();
+      state = lstate + 2;
     }
   }
 
+  std::cout << odo_left.count() << "/" << odo_right.count() << std::endl;
+
   motors.stop();
+  std::cout << "end pos: " << this->pos_x << "/" << this->pos_y << std::endl;
 
 }
 
@@ -153,11 +172,11 @@ void DriveController::forward(int dist) {
 // drive backward for "dist" steps
 //
 void DriveController::backward(int dist) {
-  odo1.reset();
-  odo2.reset();
+  odo_left.reset();
+  odo_right.reset();
 
   motors.backward();
-  while (odo1.count() < dist && odo2.count() < dist) {
+  while (odo_left.count() < dist && odo_right.count() < dist) {
     delay(2);
   }
   motors.stop();
@@ -167,11 +186,11 @@ void DriveController::backward(int dist) {
 // turn left for given odo meter steps
 //
 void DriveController::turn_left(int steps) {
-  odo1.reset();
-  odo2.reset();
+  odo_left.reset();
+  odo_right.reset();
 
   motors.turn_left();
-  while (odo1.count() < steps && odo2.count() < steps) {
+  while (odo_left.count() < steps && odo_right.count() < steps) {
     delay(2);
   }
   motors.stop();
@@ -181,11 +200,11 @@ void DriveController::turn_left(int steps) {
 // turn right for given odo meter steps
 //
 void DriveController::turn_right(int steps) {
-  odo1.reset();
-  odo2.reset();
+  odo_left.reset();
+  odo_right.reset();
 
   motors.turn_right();
-  while (odo1.count() < steps && odo2.count() < steps) {
+  while (odo_left.count() < steps && odo_right.count() < steps) {
     delay(2);
   }
   motors.stop();
