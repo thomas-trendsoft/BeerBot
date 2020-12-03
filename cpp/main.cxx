@@ -26,13 +26,13 @@ int main() {
 
   std::cout << "start demo.." << std::endl;
 
-  double* data = eye.scan(25);
+  double* data = eye.scan(60);
 
   for (int i=0;i<50;i++) {
     std::cout << data[i] << std::endl;
   }
 
-  delete data;
+  delete[] data;
 
   return 0 ;
 

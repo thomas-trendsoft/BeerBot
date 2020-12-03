@@ -31,14 +31,14 @@ double EyeScanner::distance() {
 double* EyeScanner::scan(int steps) {
   double* val = new double[steps*2];
 
-  this->stepper.rotate(steps*10,1);
+  this->stepper.rotate(steps*5,1);
   for (int i=(0-steps);i<steps;i++) {
     val[i+steps] = this->dist.measure();
-    this->stepper.rotate(10,-1);
+    this->stepper.rotate(5,-1);
   }
-  this->stepper.rotate(steps*10,1);
+  this->stepper.rotate(steps*5,1);
   this->stepper.pause();
-  
+
   return val;
 }
 

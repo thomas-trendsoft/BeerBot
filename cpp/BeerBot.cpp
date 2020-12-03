@@ -18,6 +18,10 @@ void BeerBot::initialize() {
   this->eye.calibration();
   std::cout << "eye calibration done." << std::endl;
 
+  std::cout << "init empty map..." << std::endl;
+
+  mapping.init_map();
+
   std::cout << "init done." << std::endl;
 }
 

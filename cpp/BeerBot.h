@@ -1,6 +1,7 @@
 #ifndef BEERBOT_H_
 #define BEERBOT_H_
 
+#include "TinySLAM.h"
 #include "Eyescanner.h"
 #include "DriveMotor.h"
 #include "DriveController.h"
@@ -9,6 +10,8 @@
 // main controller for the beerbot
 //
 class BeerBot {
+
+  TinySLAM mapping;
 
   EyeScanner eye;
 
