@@ -11,10 +11,13 @@
 //
 class BeerBot {
 
+  // SLAM implementation for mapping
   TinySLAM mapping;
 
+  // distance sensor scanner
   EyeScanner eye;
 
+  // motor drive controller
   DriveController driver;
 
   public:

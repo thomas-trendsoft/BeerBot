@@ -2,6 +2,8 @@
 #include <math.h>
 #include "TinySLAM.h"
 
+#define SWAP(x,y) (x ^= y ^= x ^= y)
+
 TinySLAM::TinySLAM() {
 
 }
@@ -54,6 +56,10 @@ void TinySLAM::map_laser_ray(int x1,int y1,int x2,int y2,int xp, int yp, int val
 
   ts_map_pixel_t* ptr;
 
+  // check position out of map
+  if (x1 < 0 || x1 >= TS_MAP_SIZE || y1 < 0 || y1 >= TS_MAP_SIZE)
+    return;
+
   x2c = x2; y2c = y2;
 
   // clipping
@@ -62,11 +68,46 @@ void TinySLAM::map_laser_ray(int x1,int y1,int x2,int y2,int xp, int yp, int val
     y2c += (y2c - y1) * (-x2c) / (x2c - x1);
     x2c  = 0;
   }
-  if (x2c > TS_MAP_SIZE) {
+  if (x2c >= TS_MAP_SIZE) {
     if (x1 == x2c) return;
     y2c += (y2c - y1) * (TS_MAP_SIZE - 1 - x2c) / (x2c - x1);
     x2c = TS_MAP_SIZE - 1;
   }
+  if (y2c < 0) {
+    if (y1 == y2c) return;
+    x2c += (x1 - x2c) * (-y2c) / (y1 - y2c);
+    y2c = 0;
+  }
+  if (y2c >= TS_MAP_SIZE) {
+    if (y1 == y2c) return;
+    x2c += (x1 - x2c) * (TS_MAP_SIZE - 1 - y2c) / (y1 - y2c);
+    y2c = TS_MAP_SIZE - 1;
+  }
+
+  // delta vals
+  dx = abs(x2 - x1); dy = abs(y2 - y1);
+  dxc = abs(x2c - x1); dyc = abs(y2c - y1);
+  // check increment directions
+  incptrx = (x2 > x1) ? 1 : -1;
+  incptry = (y2 > y1) ? TS_MAP_SIZE : -TS_MAP_SIZE;
+  sincv   = (value > TS_NO_OBSTACLE) ? 1 : -1;
+  // calc err values
+  if (dx > dy) {
+    derrorv = abs(xp - x2);
+  } else {
+    SWAP(dx,dy);SWAP(dxc,dyc);SWAP(incptrx,incptry);
+    derrorv = abs(yp - y2);
+  }
+  error  = 2 * dyc - dxc;
+  horiz  = 2 * dyc;
+  diago  = 2 * (dyc - dxc);
+  errorv = (derrorv / 2);
+  incerrorv = value - TS_NO_OBSTACLE - derrorv * incv;
+  ptr = this->map.map + y1 * TS_MAP_SIZE + x1;
+  pixval = TS_NO_OBSTACLE;
+
+  
+
 }
 
 void TinySLAM::init_map() {
