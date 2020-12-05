@@ -1,9 +1,28 @@
+#include <iostream>
 #include <SFML/Graphics.hpp>
 
 int main()
 {
+    // basic assets
+    sf::Color bgColor(173,128,24);
+    sf::Font font;
+    if (!font.loadFromFile("fonts/OpenSans-Regular.ttf"))
+    {
+      std::cout << "failed to load config files" << std::endl;
+      return -1;
+    }
+
     // create the window
     sf::RenderWindow window(sf::VideoMode(800, 600), "My window");
+
+    // Titel Test
+    sf::Text text;
+    text.setPosition(20.0,20.0);
+    text.setFont(font);
+    text.setString("BeerBot Control");
+    text.setCharacterSize(24);
+    text.setFillColor(sf::Color::Yellow);
+
 
     // run the program as long as the window is open
     while (window.isOpen())
@@ -18,10 +37,10 @@ int main()
         }
 
         // clear the window with black color
-        window.clear(sf::Color::Black);
+        window.clear(bgColor);
 
         // draw everything here...
-        // window.draw(...);
+        window.draw(text);
 
         // end the current frame
         window.display();

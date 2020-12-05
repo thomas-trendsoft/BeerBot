@@ -61,6 +61,10 @@ Die PIN Nummer entspricht der GPIO Nummer bei der Raspberry Belegung.
     - Pin14 = IN
 - Taster2
     - Pin15 = IN
+- ODO Meter 1
+    - Pin5 = IN
+- ODO Meter 2
+    - Pin6 = IN
 - Gyroscope / MPU 6050
     - Pin2 = SDA (have to check I2C on Raspberry if not exact wrong)
     - Pin3 = SCL
