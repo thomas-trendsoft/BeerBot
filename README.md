@@ -9,12 +9,11 @@ Basis Aufgaben für die erste Version:
 - Object Detection (Bier erkennung)
 - Steuerung der Aktuatoren zum Heben (Bier aufnehmen)
 
-
 ## Basis Aufbauplan
 
 ### Software
 
-- FastSLAM 1.0 als Navigation und Mapping Algorithmus
+- TinySLAM als Navigation und Mapping Algorithmus
 - YOLOvX as Object Detection Network mit eigenem Training für die Bierdose
 
 ### Hardware
@@ -70,7 +69,8 @@ Die PIN Nummer entspricht der GPIO Nummer bei der Raspberry Belegung.
     - Pin3 = SCL
 
 
-##### Datenblätter
+##### Datenblätter/Papers
 
+- TinySLAM: https://ieeexplore.ieee.org/document/5707402
 - MPU6050 Basic Datasheet: https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Datasheet1.pdf
 - MPU6050 Register Datasheet: https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf
