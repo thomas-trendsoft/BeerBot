@@ -71,7 +71,7 @@ public class BeerNetClient {
 		int len = 7 + receiverid.length();
 		
 		// send pull request
-		output.write(("LEN;9;ORDER;" + receiverid + "\n").getBytes("utf-8"));
+		output.write(("LEN;" + len + ";ORDER;" + receiverid + "\n").getBytes("utf-8"));
 		
 		HashMap<String,String> data = readMessage();
 		

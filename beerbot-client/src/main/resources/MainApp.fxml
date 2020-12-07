@@ -12,7 +12,6 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
 
-
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="583.0" prefWidth="691.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.krieger.beerbot.client.MainApp">
    <top>
       <VBox prefHeight="40.0" prefWidth="691.0" BorderPane.alignment="CENTER">
@@ -24,17 +23,17 @@
             </Label>
             <ToolBar prefHeight="40.0" prefWidth="200.0">
               <items>
-                  <TextField />
+                  <TextField fx:id="hostnameField" />
                 <Button mnemonicParsing="false" onAction="#openConnection" text="Verbinden" />
-                  <Circle fill="#9aa1a8" radius="11.0" stroke="BLACK" strokeType="INSIDE" />
-                  <Button mnemonicParsing="false" text="Ausschalten" />
+                  <Circle fx:id="statLight" fill="#9aa1a8" radius="11.0" stroke="BLACK" strokeType="INSIDE" />
+                  <Button mnemonicParsing="false" onAction="#clientShutdown" text="Ausschalten" />
               </items>
             </ToolBar>
          </children>
       </VBox>
    </top>
    <left>
-      <VBox prefHeight="470.0" prefWidth="130.0" style="-fx-padding: 5px;" BorderPane.alignment="CENTER">
+      <VBox prefHeight="470.0" prefWidth="154.0" style="-fx-padding: 5px;" BorderPane.alignment="CENTER">
          <children>
             <Label text="Position">
                <font>
@@ -58,8 +57,8 @@
                   <Font size="14.0" />
                </font>
             </Label>
-            <ListView prefHeight="1000.0" prefWidth="120.0" />
-            <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="500.0" text="Bier holen!" textAlignment="CENTER" />
+            <ListView fx:id="receiverList" prefHeight="1000.0" prefWidth="120.0" />
+            <Button mnemonicParsing="false" onAction="#orderBeer" prefHeight="27.0" prefWidth="500.0" text="Bier holen!" textAlignment="CENTER" />
          </children>
       </VBox>
    </left>
@@ -69,7 +68,7 @@
    <bottom>
       <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
          <items>
-            <Label prefHeight="17.0" prefWidth="340.0" text="Status..." />
+            <Label fx:id="statusLabel" prefHeight="17.0" prefWidth="673.0" text="Status..." />
          </items>
       </ToolBar>
    </bottom>
