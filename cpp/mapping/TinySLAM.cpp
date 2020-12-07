@@ -100,13 +100,13 @@ void TinySLAM::map_laser_ray(int x1,int y1,int x2,int y2,int xp, int yp, int val
   }
   error  = 2 * dyc - dxc;
   horiz  = 2 * dyc;
-  diago  = 2 * (dyc - dxc);
+  diag   = 2 * (dyc - dxc);
   errorv = (derrorv / 2);
   incerrorv = value - TS_NO_OBSTACLE - derrorv * incv;
   ptr = this->map.map + y1 * TS_MAP_SIZE + x1;
   pixval = TS_NO_OBSTACLE;
 
-  
+
 
 }
 

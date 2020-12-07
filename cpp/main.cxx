@@ -7,6 +7,7 @@
 #include <math.h>
 #include "Eyescanner.h"
 #include "BeerBot.h"
+#include "BeerBotServer.h"
 #include <wiringPi.h>
 
 int main() {
@@ -19,20 +20,30 @@ int main() {
   //bbot.initialize();
   //bbot.driveAround();
 
-  DriveController driver = DriveController();
-  EyeScanner      eye    = EyeScanner();
+  std::cout << "Starte BeerBot Server..." << std::endl;
+  BeerBotServer server = BeerBotServer();
+  server.start();
 
-  driver.initialize(&eye);
+  // DriveController driver = DriveController();
+  // EyeScanner      eye    = EyeScanner();
+  //
+  // driver.initialize(&eye);
+  //
+  // std::cout << "start demo.." << std::endl;
+  //
+  // double* data = eye.scan(60);
+  //
+  // for (int i=0;i<120;i++) {
+  //   std::cout << data[i] << std::endl;
+  // }
+  //
+  // delete[] data;
 
-  std::cout << "start demo.." << std::endl;
+  delay(20000);
 
-  double* data = eye.scan(60);
+  server.stop();
 
-  for (int i=0;i<50;i++) {
-    std::cout << data[i] << std::endl;
-  }
-
-  delete[] data;
+  delay(5000);
 
   return 0 ;
 
