@@ -1,7 +1,5 @@
 package org.krieger.beerbot.client;
 
-import javax.net.ssl.HostnameVerifier;
-
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -126,7 +124,7 @@ public class MainApp extends Application {
 		Parent root;
 		try {
 			root = FXMLLoader.load(getClass().getResource("/MainApp.fxml"));
-			Scene scene = new Scene(root, 600, 600);
+			Scene scene = new Scene(root, 800, 600);
 
 			stage.setTitle("BeerBot Client");
 			stage.setScene(scene);

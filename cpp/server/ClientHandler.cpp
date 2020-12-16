@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <sstream>
 #include <string.h>
 #include <unistd.h>
 #include <netdb.h>
@@ -13,6 +14,7 @@
 //
 void* client_handler_start(void* client) {
   int csocket = *((int*)client);
+  if (client != NULL) delete (int*)client;
 
   ClientHandler chandler(csocket);
 
@@ -46,23 +48,23 @@ ClientHandler::ClientHandler(int socket) {
 // read basic message from protocol
 //
 std::map<std::string,std::string> ClientHandler::readMessage() {
-  char                  buffer[1024];
+  std::vector<char>          buf(5000);
   int                   rc;
   std::map<std::string,std::string> msg;
 
-  std::cout << "start read" << std::endl;
   // read first packet
-  rc = recv(this->socket,buffer,1024,0);
+  rc = recv(this->socket,buf.data(),buf.size(),0);
   if (rc < 6) {
+    std::cout << "err read: " << rc << std::endl;
     this->errmsg = "no good handshake";
     this->error = -1;
     return msg;
   }
 
-  std::cout << "read msg: " << buffer << std::endl;
+  std::cout << "read msg: " << buf.data() << std::endl;
 
   // tokenize
-  char* token = strtok(buffer,";");
+  char* token = strtok(buf.data(),";");
   if (token == NULL) {
     this->errmsg = "failed to parse message";
     this->error = -1;
@@ -79,10 +81,39 @@ std::map<std::string,std::string> ClientHandler::readMessage() {
 }
 
 //
+// basic message send to client for this handler
+//
+int ClientHandler::sendMessage(std::map<std::string,std::string> msg) {
+  int clen = 0;
+
+  std::map<std::string, std::string>::iterator it;
+
+  std::stringstream ss;
+  for (it = msg.begin(); it != msg.end(); it++)
+  {
+    clen += it->first.length();
+    clen += it->second.length();
+    ss << ";" << it->first << ";" << it->second;
+  }
+
+  // create output string
+  std::stringstream data;
+
+  data << "LEN;" << clen << ";" << ss.str() << std::endl;
+
+  std::string dstr = data.str();
+
+  // send msg
+  return send(this->socket,dstr.data(),dstr.length(),0);
+
+}
+
+//
 // protocol handshake
 //
 int ClientHandler::handShake() {
     std::cout << "open client connection..." << std::endl;
+
     std::map<std::string,std::string> msg = this->readMessage();
 
     return 0;

@@ -19,28 +19,31 @@ void *beerbotserver_main_thread(void* sptr) {
 // open a new client connection
 //
 int BeerBotServer::acceptClient() {
-  int clientSocket;
+  int* clientSocket = new int;
   struct timeval tv;
+
+  struct sockaddr  client_addr;
+  socklen_t        client_addr_size = sizeof(client_addr);
 
   tv.tv_sec = (long)5;
   tv.tv_usec = 0;
 
-  if ((clientSocket = accept(this->serverSocket,(struct sockaddr *) NULL,NULL))<0)
+  if (((*clientSocket) = accept(this->serverSocket,(struct sockaddr *) &client_addr,&client_addr_size))<0)
   {
     perror("accept failed for client connection");
     return -1;
   }
 
   // check client socket state
-  if (clientSocket > 0) {
-    if (pthread_create(&this->clientThreads[this->clientIdx],NULL,&client_handler_start,(void*)&clientSocket)) {
+  if (*clientSocket > 0) {
+    if (pthread_create(&this->clientThreads[this->clientIdx],NULL,&client_handler_start,(void*)(clientSocket))) {
       perror("failed to start client thread");
       return -1;
     }
 
     this->clientIdx = (this->clientIdx + 1) % 10;
     return 1;
-  } else if (clientSocket < 0) {
+  } else if (*clientSocket < 0) {
     std::cout << "failed to select client socket" << std::endl;
     return -1;
   }
@@ -92,6 +95,7 @@ int BeerBotServer::isStopped() {
 void BeerBotServer::stop() {
   std::cout << "stop beer bot server..." << std::endl;
   this->stopServer = true;
+  closesocket(this->serverSocket);
 }
 
 //

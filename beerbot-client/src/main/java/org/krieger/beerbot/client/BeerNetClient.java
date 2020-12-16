@@ -8,6 +8,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 
+import javax.sound.sampled.ReverbType;
+
 import org.krieger.beerbot.data.Map;
 import org.krieger.beerbot.data.Position;
 
@@ -57,6 +59,14 @@ public class BeerNetClient {
 	public void connect() throws UnknownHostException, IOException {
 		this.socket   = new Socket(hostname, 10101);
 		output = this.socket.getOutputStream();
+		input  = this.socket.getInputStream();
+		
+		HashMap<String,String> msg = new HashMap<String,String>();
+		msg.put("PROST", "0.1");
+		
+		sendMessage(msg);
+		
+		
 	}
 	
 	/**
@@ -101,6 +111,24 @@ public class BeerNetClient {
 			theta = Double.parseDouble(data.get("theta"));
 		
 		return new Position(x, y, theta);
+	}
+	
+	private void sendMessage(HashMap<String,String> msg) throws IOException {
+		int clen = 0;
+		
+		StringBuffer buf = new StringBuffer();
+
+		for (String k : msg.keySet()) {
+			clen += k.length() + 1;
+			clen += msg.get(k).length() + 1;
+			buf.append(k + ";");
+			buf.append(msg.get(k) + ";");
+		}
+		
+		buf.insert(0, "LEN;" + clen + ";");
+		
+		output.write(buf.toString().getBytes("utf-8"));
+		
 	}
 	
 	/**
