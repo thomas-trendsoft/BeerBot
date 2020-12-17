@@ -44,13 +44,23 @@ ClientHandler::ClientHandler(int socket) {
   this->socket = socket;
 }
 
+// free memory msg
+void ClientHandler::freeMsg(map<string,msgdata*>* msg) {
+  map<string,msgdata*>::iterator it;
+
+  for (it = msg->begin();;it != msg->end()) {
+
+  }
+  delete msg;
+}
+
 //
 // read basic message from protocol
 //
-std::map<std::string,std::string> ClientHandler::readMessage() {
-  std::vector<char>          buf(5000);
-  int                   rc;
-  std::map<std::string,std::string> msg;
+map<string,msgdata*>* ClientHandler::readMessage() {
+  vector<char>        buf(4096);
+  int                 rc;
+  map<string,msgdata*>* msg = new map<string,msgdata*>;
 
   // read first packet
   rc = recv(this->socket,buf.data(),buf.size(),0);
@@ -64,7 +74,9 @@ std::map<std::string,std::string> ClientHandler::readMessage() {
   std::cout << "read msg: " << buf.data() << std::endl;
 
   // tokenize
-  char* token = strtok(buf.data(),";");
+  char* save1;
+
+  char* token = strtok_r(buf.data(),";",&save1);
   if (token == NULL) {
     this->errmsg = "failed to parse message";
     this->error = -1;
@@ -73,9 +85,31 @@ std::map<std::string,std::string> ClientHandler::readMessage() {
 
   // parse msg len and read further bytes if needed
   std::cout << "len msg: " << token << std::endl;
-  int mlen = atoi(token);
 
-  std::cout << "parsed: " << mlen << std::endl;
+  token = strtok_r(save1,";",&save1);
+  std::cout << "len data: " << token << std::endl;
+
+  int mlen = atoi(token);
+  int limit = min(mlen,2048);
+
+  cout << "parsed: " << mlen << "/" << limit << endl;
+
+  int key = 1;
+  string* kval;
+  while ((token = strtok_r(save1,";",&save1))) {
+    cout << "token: " << token << endl;
+    if (key) {
+      kval = new string(token);
+      key = 0;
+    } else {
+      msgdata* entry = new msgdata;
+      entry->key = kval;
+      entry->value = new string(token);
+      msg->insert(pair<string,msgdata*>(*kval,entry));
+      cout << *kval << " -> " << token << endl;
+      key = 1;
+    }
+  }
 
   return msg;
 }
@@ -83,26 +117,32 @@ std::map<std::string,std::string> ClientHandler::readMessage() {
 //
 // basic message send to client for this handler
 //
-int ClientHandler::sendMessage(std::map<std::string,std::string> msg) {
+int ClientHandler::sendMessage(map<string,string> msg) {
   int clen = 0;
 
-  std::map<std::string, std::string>::iterator it;
+  map<string, string>::iterator it;
 
-  std::stringstream ss;
+  stringstream ss;
   for (it = msg.begin(); it != msg.end(); it++)
   {
-    clen += it->first.length();
-    clen += it->second.length();
-    ss << ";" << it->first << ";" << it->second;
+    clen += it->first.length() + 1;
+    clen += it->second.length() + 1;
   }
 
   // create output string
-  std::stringstream data;
+  stringstream data;
 
-  data << "LEN;" << clen << ";" << ss.str() << std::endl;
+  data << "LEN;" << clen << ";" << ss.str();
 
-  std::string dstr = data.str();
+  for (it = msg.begin(); it != msg.end(); it++)
+  {
+    data << it->first << ";";
+    data << it->second << ";";
+  }
 
+  string dstr = data.str();
+
+  cout << "send client msg: " << dstr << endl;
   // send msg
   return send(this->socket,dstr.data(),dstr.length(),0);
 
@@ -112,9 +152,23 @@ int ClientHandler::sendMessage(std::map<std::string,std::string> msg) {
 // protocol handshake
 //
 int ClientHandler::handShake() {
-    std::cout << "open client connection..." << std::endl;
+    cout << "open client connection..." << std::endl;
 
-    std::map<std::string,std::string> msg = this->readMessage();
+    map<string,string>  hello;
+    map<string,msgdata*>* msg = this->readMessage();
+
+    // check handshake message
+    if (msg->count("PROST") == 0) {
+      cout << "No prost on hand shake!" << endl;
+      this->shutdown();
+      this->freeMsg(msg);
+      return -1;
+    } else {
+      cout << "GOT HANDSHAKE" << endl;
+      hello.insert(pair<string,string>("PROST","1"));
+      this->sendMessage(hello);
+      //this->freeMsg(msg);
+    }
 
     return 0;
 }

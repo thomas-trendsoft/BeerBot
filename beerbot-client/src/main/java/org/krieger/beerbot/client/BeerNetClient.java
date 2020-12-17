@@ -8,8 +8,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 
-import javax.sound.sampled.ReverbType;
-
 import org.krieger.beerbot.data.Map;
 import org.krieger.beerbot.data.Position;
 
@@ -42,12 +40,18 @@ public class BeerNetClient {
 	private InputStream input;
 	
 	/**
+	 * flag if client is connected to bot
+	 */
+	private boolean connected;
+	
+	/**
 	 * default constructor 
 	 * 
 	 * @param hostname
 	 */
 	public BeerNetClient(String hostname) {
 		this.hostname = hostname;
+		this.connected = false;
 	}
 	
 	/**
@@ -61,14 +65,26 @@ public class BeerNetClient {
 		output = this.socket.getOutputStream();
 		input  = this.socket.getInputStream();
 		
+		System.out.println("open socket");
 		HashMap<String,String> msg = new HashMap<String,String>();
-		msg.put("PROST", "0.1");
+		msg.put("PROST", "1");
 		
 		sendMessage(msg);
+		msg = readMessage();
+		
+		if (msg.containsKey("PROST")) {
+			this.connected = true;			
+		} else {
+			this.shutdown();
+		}
 		
 		
 	}
 	
+	public boolean isConnected() {
+		return connected;
+	}
+
 	/**
 	 * order a new beer for a given receiver 
 	 * 
@@ -166,10 +182,10 @@ public class BeerNetClient {
 		}
 		
 		// check len 
-		System.out.println("check msg len: " + msgstr.substring(4,lidx));
+		System.out.println("check msg len: " + msgstr);
 		int mlen = Integer.parseInt(msgstr.substring(4, lidx));
-		if (mlen != msgstr.length()) {
-			throw new IOException("bad response: len does not match " + mlen + "/" + msgstr.length());
+		if (mlen != (msgstr.length() - (lidx+1))) {
+			throw new IOException("bad response: len does not match " + mlen + "/" + msgstr.length() + "/" + lidx);
 		}
 		
 		// parse parameter
@@ -185,9 +201,10 @@ public class BeerNetClient {
 				vstr = msgstr.substring(lidx, tidx);
 				key  = true;
 				data.put(kstr, vstr);
+				System.out.println("add value: " + kstr + " -> " + vstr);
 			}
 			lidx = tidx;
-			tidx = msgstr.indexOf(';',tidx);
+			tidx = msgstr.indexOf(';',tidx+1);
 		}
 		
 		return data;
@@ -206,7 +223,7 @@ public class BeerNetClient {
 		// send pull request
 		output.write("LEN;9;PULL;MAP\n".getBytes("utf-8"));
 		
-		HashMap<String,String> data = readMessage();
+		//HashMap<String,String> data = readMessage();
 		
 		return map;
 	}
@@ -231,6 +248,7 @@ public class BeerNetClient {
 	 * shutdown client connection 
 	 */
 	public void shutdown() {
+		this.connected = false;
 		if (socket != null && socket.isConnected()) {
 			try {
 				socket.close();

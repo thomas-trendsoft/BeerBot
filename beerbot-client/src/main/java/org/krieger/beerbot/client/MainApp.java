@@ -1,6 +1,7 @@
 package org.krieger.beerbot.client;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -73,7 +74,22 @@ public class MainApp extends Application {
 		
 		try {
 			client = new BeerNetClient(hostname);
-			client.connect();			
+			new Thread(() -> {
+				try {
+					System.out.println("connect...");
+					client.connect();
+					Platform.runLater(() -> {
+						statLight.setFill(Color.GREEN);						
+					});
+				} catch (Exception e) {
+					e.printStackTrace();
+					Platform.runLater(() -> {
+						statLight.setFill(Color.RED);
+						statusLabel.setText("Fehler beim Verbinden: " + e.getMessage());						
+					});
+					client = null;
+				}
+			}).start();
 		} catch (Exception e) {
 			e.printStackTrace();
 			statLight.setFill(Color.RED);

@@ -6,6 +6,12 @@
 #include <string>
 #include <pthread.h>
 
+using namespace std;
+
+typedef struct {
+  string* key;
+  string* value;
+} msgdata;
 
 void* client_handler_start(void* client);
 
@@ -21,17 +27,20 @@ class ClientHandler {
   int error;
 
   // error msg
-  std::string errmsg;
+  string errmsg;
 
 public:
   // default constructor
   ClientHandler(int socket);
 
   // read basic msg
-  std::map<std::string,std::string> readMessage();
+  map<string,msgdata*>* readMessage();
 
   // send basic msg
-  int sendMessage(std::map<std::string,std::string> msg);
+  int sendMessage(map<string,string> msg);
+
+  // free memory msg
+  void freeMsg(map<string,msgdata*>* msg);
 
   // welcome handshake for clients
   int handShake();

@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <unistd.h>
 #include <iostream>
 #include <string.h>
 #include "BeerBotServer.h"
@@ -95,7 +96,7 @@ int BeerBotServer::isStopped() {
 void BeerBotServer::stop() {
   std::cout << "stop beer bot server..." << std::endl;
   this->stopServer = true;
-  closesocket(this->serverSocket);
+  close(this->serverSocket);
 }
 
 //
