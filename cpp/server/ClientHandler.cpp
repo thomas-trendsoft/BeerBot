@@ -48,8 +48,10 @@ ClientHandler::ClientHandler(int socket) {
 void ClientHandler::freeMsg(map<string,msgdata*>* msg) {
   map<string,msgdata*>::iterator it;
 
-  for (it = msg->begin();;it != msg->end()) {
-
+  for (it = msg->begin();it != msg->end();++it) {
+    delete it->second->key;
+    delete it->second->value;
+    delete it->second;
   }
   delete msg;
 }
@@ -66,7 +68,7 @@ map<string,msgdata*>* ClientHandler::readMessage() {
   rc = recv(this->socket,buf.data(),buf.size(),0);
   if (rc < 6) {
     std::cout << "err read: " << rc << std::endl;
-    this->errmsg = "no good handshake";
+    this->errmsg = "client read error ";
     this->error = -1;
     return msg;
   }
@@ -140,6 +142,8 @@ int ClientHandler::sendMessage(map<string,string> msg) {
     data << it->second << ";";
   }
 
+  data << "\n";
+
   string dstr = data.str();
 
   cout << "send client msg: " << dstr << endl;
@@ -167,7 +171,7 @@ int ClientHandler::handShake() {
       cout << "GOT HANDSHAKE" << endl;
       hello.insert(pair<string,string>("PROST","1"));
       this->sendMessage(hello);
-      //this->freeMsg(msg);
+      this->freeMsg(msg);
     }
 
     return 0;
@@ -178,6 +182,43 @@ int ClientHandler::handShake() {
 //
 void ClientHandler::handle() {
   std::cout << "handle client..." << std::endl;
+
+  // read and parse commands
+  while (true) {
+
+    // read client message
+    map<string,msgdata*>* msg = this->readMessage();
+
+    // check error on readMessag
+    if (this->error < 0) {
+      cout << "shutdown client close/error" << endl;
+      break;
+    }
+
+    // check close connection
+    if (msg->count("CLOSE")==1) {
+      this->freeMsg(msg);
+      cout << "close client connection" << endl;
+      break;
+    }
+
+    // handle pull info
+    if (msg->count("PULL")==1) {
+      map<string,string> resp;
+
+      resp.insert(pair<string,string>("INFO","FAKE"));
+      this->sendMessage(resp);
+    // handle command messages
+    } else if (msg->count("CMD")==1) {
+      map<string,string> resp;
+
+      resp.insert(pair<string,string>("RESULT","FAKE"));
+      this->sendMessage(resp);
+    }
+
+    // free memory
+    this->freeMsg(msg);
+  }
 }
 
 //

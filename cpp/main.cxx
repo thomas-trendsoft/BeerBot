@@ -10,11 +10,30 @@
 #include "BeerBotServer.h"
 #include <wiringPi.h>
 
+int runApp = 1;
+
+void keyboard_int_handler(int s){
+  printf("Caught signal %d\n",s);
+  runApp = 0;
+}
+
 int main() {
 
   std::cout << "Start Base Setup..." << std::endl;
 
+  struct sigaction sigIntHandler;
+
+  sigIntHandler.sa_handler = keyboard_int_handler;
+  sigemptyset(&sigIntHandler.sa_mask);
+  sigIntHandler.sa_flags = 0;
+
+  sigaction(SIGINT, &sigIntHandler, NULL);
+
+  std::cout << "Keyboard Interrupt handler registered." << std::endl;
+
   wiringPiSetupGpio();
+
+  std::cout << "Raspberry Pi GPIO Setup done." << std::endl;
 
   //BeerBot bbot = BeerBot();
   //bbot.initialize();
@@ -24,26 +43,14 @@ int main() {
   BeerBotServer server = BeerBotServer();
   server.start();
 
-  // DriveController driver = DriveController();
-  // EyeScanner      eye    = EyeScanner();
-  //
-  // driver.initialize(&eye);
-  //
-  // std::cout << "start demo.." << std::endl;
-  //
-  // double* data = eye.scan(60);
-  //
-  // for (int i=0;i<120;i++) {
-  //   std::cout << data[i] << std::endl;
-  // }
-  //
-  // delete[] data;
-
-  delay(20000);
+  while (runApp == 1) {
+    delay(1000);
+    std::cout << ".";
+  }
 
   server.stop();
 
-  delay(5000);
+  delay(200);
 
   return 0 ;
 

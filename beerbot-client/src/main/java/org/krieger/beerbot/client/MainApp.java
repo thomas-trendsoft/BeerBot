@@ -1,5 +1,7 @@
 package org.krieger.beerbot.client;
 
+import java.io.IOException;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -35,6 +37,9 @@ public class MainApp extends Application {
 	@FXML
 	private Label statusLabel;
 	
+	@FXML 
+	private Label distLabel;
+	
 	@FXML
 	private TextField hostnameField;
 	
@@ -47,12 +52,11 @@ public class MainApp extends Application {
 	 */
 	@FXML
 	protected void openConnection(ActionEvent ae) {
-		System.out.println("open con");
 		
 		// check existing connection 
 		if (client != null) {
 			Alert alert = new Alert(AlertType.WARNING);
-			alert.setTitle("Bier Bot");
+			alert.setTitle("Beer Bot");
 			alert.setHeaderText(null);
 			alert.setContentText("Bitte schließe erst die Verbindung zu dem aktuellen BeerBot!");
 
@@ -64,7 +68,7 @@ public class MainApp extends Application {
 		String hostname = hostnameField.getText();
 		if (hostname == null || hostname.trim().isEmpty()) {
 			Alert alert = new Alert(AlertType.WARNING);
-			alert.setTitle("Bier Bot");
+			alert.setTitle("Beer Bot");
 			alert.setHeaderText(null);
 			alert.setContentText("Bitte gib zuerst den Hostname / IP für den BeerBot ein!");
 
@@ -108,11 +112,64 @@ public class MainApp extends Application {
 		System.out.println("shutdown client");
 		try {
 			client.shutdown();
+			client = null;
+			statLight.setFill(Color.DARKGRAY);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
+	/**
+	 * util method to check connection state 
+	 * 
+	 * @return
+	 */
+	private boolean checkBotConnection() {
+		
+		if (client == null || !client.isConnected()) {
+			Alert alert = new Alert(AlertType.WARNING);
+			alert.setTitle("BeerBot");
+			alert.setHeaderText(null);
+			alert.setContentText("Bitte verbinden Sie sich zuerst mit dem BeerBot!");
+
+			alert.showAndWait();
+			
+			client = null;
+			
+			return false;
+		}
+
+		return true;
+	}
+	
+	/**
+	 * UI Action to execute a short distance measurement
+	 * 
+	 * @param ae
+	 */
+	@FXML
+	protected void measureDistance(ActionEvent ae) {
+		System.out.println("pull distance");
+		
+		if (!checkBotConnection()) return;
+		
+		new Thread(() -> {
+			try {
+				Double dist = client.pullDistance();
+				Platform.runLater(() -> {
+					distLabel.setText(String.format("%.2f", dist));
+				});
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}).start();
+	}
+	
+	/**
+	 * UI Action to start a beer delivery
+	 * 
+	 * @param ae
+	 */
 	@FXML
 	protected void orderBeer(ActionEvent ae) {		
 		

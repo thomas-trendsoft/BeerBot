@@ -65,7 +65,6 @@ public class BeerNetClient {
 		output = this.socket.getOutputStream();
 		input  = this.socket.getInputStream();
 		
-		System.out.println("open socket");
 		HashMap<String,String> msg = new HashMap<String,String>();
 		msg.put("PROST", "1");
 		
@@ -75,10 +74,10 @@ public class BeerNetClient {
 		if (msg.containsKey("PROST")) {
 			this.connected = true;			
 		} else {
+			System.out.println("no handshake received!");
 			this.shutdown();
 		}
-		
-		
+				
 	}
 	
 	public boolean isConnected() {
@@ -182,14 +181,15 @@ public class BeerNetClient {
 		}
 		
 		// check len 
-		System.out.println("check msg len: " + msgstr);
 		int mlen = Integer.parseInt(msgstr.substring(4, lidx));
-		if (mlen != (msgstr.length() - (lidx+1))) {
+		// + 2 ; + \n 
+		if (mlen != (msgstr.length() - (lidx+2))) {
 			throw new IOException("bad response: len does not match " + mlen + "/" + msgstr.length() + "/" + lidx);
 		}
 		
 		// parse parameter
 		boolean key = true;
+		lidx++;
 		int    tidx = msgstr.indexOf(';', lidx);
 		
 		String kstr = null,vstr = null;
@@ -201,9 +201,8 @@ public class BeerNetClient {
 				vstr = msgstr.substring(lidx, tidx);
 				key  = true;
 				data.put(kstr, vstr);
-				System.out.println("add value: " + kstr + " -> " + vstr);
 			}
-			lidx = tidx;
+			lidx = tidx+1;
 			tidx = msgstr.indexOf(';',tidx+1);
 		}
 		
@@ -237,20 +236,33 @@ public class BeerNetClient {
 	 */
 	public String pullStatus() throws UnsupportedEncodingException, IOException {
 		// send pull request
-		output.write("LEN;10;PULL;STAT\n".getBytes("utf-8"));
+		output.write("LEN;11;PULL;STAT;\n".getBytes("utf-8"));
 		
 		HashMap<String,String> data = readMessage();
 		
 		return data.get("STATUS");
 	}
 	
+	public Double pullDistance() throws UnsupportedEncodingException, IOException {
+		output.write("LEN;11;PULL;DIST;\n".getBytes("utf-8"));
+		
+		HashMap<String,String> data = readMessage();
+		
+		System.out.println(data.get("DIST"));
+		
+		return 1.0;
+	}
+	
 	/**
 	 * shutdown client connection 
 	 */
 	public void shutdown() {
+		HashMap<String,String> msg = new HashMap<String,String>();
+		msg.put("CLOSE", "1");
 		this.connected = false;
 		if (socket != null && socket.isConnected()) {
 			try {
+				this.sendMessage(msg);
 				socket.close();
 			} catch (IOException e) {
 				e.printStackTrace();
