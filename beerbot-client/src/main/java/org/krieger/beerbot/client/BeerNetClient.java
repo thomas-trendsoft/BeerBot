@@ -19,6 +19,8 @@ import org.krieger.beerbot.data.Position;
  */
 public class BeerNetClient {
 	
+	protected static String[] moveDirs = {"STOP","FORwARD","BACKWARD","LEFT","RIGHT"};
+	
 	/**
 	 * client socket
 	 */
@@ -65,7 +67,7 @@ public class BeerNetClient {
 		output = this.socket.getOutputStream();
 		input  = this.socket.getInputStream();
 		
-		HashMap<String,String> msg = new HashMap<String,String>();
+		Message msg = new Message();
 		msg.put("PROST", "1");
 		
 		sendMessage(msg);
@@ -84,51 +86,8 @@ public class BeerNetClient {
 		return connected;
 	}
 
-	/**
-	 * order a new beer for a given receiver 
-	 * 
-	 * @param receiverid
-	 * @return
-	 * @throws IOException 
-	 * @throws UnsupportedEncodingException 
-	 */
-	public String orderBeer(String receiverid) throws UnsupportedEncodingException, IOException {
-		int len = 7 + receiverid.length();
-		
-		// send pull request
-		output.write(("LEN;" + len + ";ORDER;" + receiverid + "\n").getBytes("utf-8"));
-		
-		HashMap<String,String> data = readMessage();
-		
-		return data.get("MSG");
-	}
-
-	/**
-	 * pull the current robot position 
-	 * 
-	 * @return
-	 * @throws UnsupportedEncodingException
-	 * @throws IOException
-	 */
-	public Position pullPosition() throws UnsupportedEncodingException, IOException {
-		double x = -9999.0,y = -9999.0,theta = -400.0;
-		
-		// send pull request
-		output.write("LEN;9;PULL;POS\n".getBytes("utf-8"));
-		
-		HashMap<String,String> data = readMessage();
-		
-		if (data.containsKey("X"))
-			x = Double.parseDouble(data.get("x"));
-		if (data.containsKey("Y"))
-			y = Double.parseDouble(data.get("y"));
-		if (data.containsKey("THETA"))
-			theta = Double.parseDouble(data.get("theta"));
-		
-		return new Position(x, y, theta);
-	}
 	
-	private void sendMessage(HashMap<String,String> msg) throws IOException {
+	private void sendMessage(Message msg) throws IOException {
 		int clen = 0;
 		
 		StringBuffer buf = new StringBuffer();
@@ -152,12 +111,12 @@ public class BeerNetClient {
 	 * @return
 	 * @throws IOException
 	 */
-	private HashMap<String, String> readMessage() throws IOException {
+	private Message readMessage() throws IOException {
 		int    rc;
 		byte[] buf;
 		
-		StringBuffer         strbuf = new StringBuffer();
-		HashMap<String,String> data = new HashMap<>();
+		StringBuffer  strbuf = new StringBuffer();
+		Message       data   = new Message();
 		
 		// read message data and create a string
 		buf = new byte[1024];
@@ -254,10 +213,77 @@ public class BeerNetClient {
 	}
 	
 	/**
+	 * send simple move command 
+	 * 
+	 * - 0 = pause
+	 * - 1 = forward
+	 * - 2 = backward
+	 * - 3 = left
+	 * - 4 = right
+	 * 
+	 * @param dir
+	 * @throws IOException 
+	 */
+	public void moveCommand(int midx) throws IOException {
+		String dir = moveDirs[midx];
+
+		Message m = new Message();
+		m.put("CMD", "MOVE");
+		m.put("DIR", dir);
+		
+		this.sendMessage(m);
+	}
+	
+
+	/**
+	 * order a new beer for a given receiver 
+	 * 
+	 * @param receiverid
+	 * @return
+	 * @throws IOException 
+	 * @throws UnsupportedEncodingException 
+	 */
+	public String orderBeer(String receiverid) throws UnsupportedEncodingException, IOException {
+		int len = 7 + receiverid.length();
+		
+		// send pull request
+		output.write(("LEN;" + len + ";ORDER;" + receiverid + "\n").getBytes("utf-8"));
+		
+		HashMap<String,String> data = readMessage();
+		
+		return data.get("MSG");
+	}
+
+	/**
+	 * pull the current robot position 
+	 * 
+	 * @return
+	 * @throws UnsupportedEncodingException
+	 * @throws IOException
+	 */
+	public Position pullPosition() throws UnsupportedEncodingException, IOException {
+		double x = -9999.0,y = -9999.0,theta = -400.0;
+		
+		// send pull request
+		output.write("LEN;9;PULL;POS\n".getBytes("utf-8"));
+		
+		HashMap<String,String> data = readMessage();
+		
+		if (data.containsKey("X"))
+			x = Double.parseDouble(data.get("x"));
+		if (data.containsKey("Y"))
+			y = Double.parseDouble(data.get("y"));
+		if (data.containsKey("THETA"))
+			theta = Double.parseDouble(data.get("theta"));
+		
+		return new Position(x, y, theta);
+	}	
+	
+	/**
 	 * shutdown client connection 
 	 */
 	public void shutdown() {
-		HashMap<String,String> msg = new HashMap<String,String>();
+		Message msg = new Message();
 		msg.put("CLOSE", "1");
 		this.connected = false;
 		if (socket != null && socket.isConnected()) {

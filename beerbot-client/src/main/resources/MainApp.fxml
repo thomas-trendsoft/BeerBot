@@ -102,15 +102,15 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               </rowConstraints>
                <children>
-                  <Button mnemonicParsing="false" prefHeight="53.0" prefWidth="84.0" text="▲" GridPane.columnIndex="1" />
-                  <Button mnemonicParsing="false" prefHeight="50.0" prefWidth="79.0" text="◀" GridPane.rowIndex="1" />
-                  <Button mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" text="||" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                  <Button fx:id="btMoveUp" mnemonicParsing="false" onAction="#moveBot" prefHeight="53.0" prefWidth="84.0" text="▲" GridPane.columnIndex="1" />
+                  <Button fx:id="btMoveLeft" mnemonicParsing="false" onAction="#moveBot" prefHeight="50.0" prefWidth="79.0" text="◀" GridPane.rowIndex="1" />
+                  <Button fx:id="btMoveStop" mnemonicParsing="false" onAction="#moveBot" prefHeight="50.0" prefWidth="50.0" text="||" GridPane.columnIndex="1" GridPane.rowIndex="1">
                      <font>
                         <Font name="System Bold" size="13.0" />
                      </font>
                   </Button>
-                  <Button mnemonicParsing="false" prefHeight="67.0" prefWidth="96.0" text="▼" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                  <Button mnemonicParsing="false" prefHeight="68.0" prefWidth="90.0" text="▶" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                  <Button fx:id="btMoveDown" mnemonicParsing="false" onAction="#moveBot" prefHeight="67.0" prefWidth="96.0" text="▼" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                  <Button fx:id="btMoveRight" mnemonicParsing="false" onAction="#moveBot" prefHeight="68.0" prefWidth="90.0" text="▶" GridPane.columnIndex="2" GridPane.rowIndex="1" />
                </children>
             </GridPane>
             <Label text="Scanner" />
@@ -128,7 +128,7 @@
         <content>
           <AnchorPane minHeight="0.0" minWidth="0.0">
                <children>
-                  <Canvas height="1000.0" layoutX="54.0" layoutY="29.0" width="1000.0" AnchorPane.bottomAnchor="-29.0" AnchorPane.leftAnchor="54.0" AnchorPane.rightAnchor="-54.0" AnchorPane.topAnchor="29.0" />
+                  <Canvas height="500.0" layoutX="54.0" layoutY="29.0" width="500.0" AnchorPane.bottomAnchor="-29.0" AnchorPane.leftAnchor="54.0" AnchorPane.rightAnchor="-54.0" AnchorPane.topAnchor="29.0" />
                </children>
             </AnchorPane>
         </content>

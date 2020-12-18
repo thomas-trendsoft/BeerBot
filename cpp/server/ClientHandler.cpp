@@ -205,13 +205,13 @@ void ClientHandler::handle() {
     // handle pull info
     if (msg->count("PULL")==1) {
       map<string,string> resp;
-
+      std::cout << *(msg->at("PULL")->value) << endl;
       resp.insert(pair<string,string>("INFO","FAKE"));
       this->sendMessage(resp);
     // handle command messages
     } else if (msg->count("CMD")==1) {
       map<string,string> resp;
-
+      std::cout << *(msg->at("CMD")->value) << endl;
       resp.insert(pair<string,string>("RESULT","FAKE"));
       this->sendMessage(resp);
     }

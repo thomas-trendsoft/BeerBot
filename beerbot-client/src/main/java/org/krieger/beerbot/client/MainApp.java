@@ -11,6 +11,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
@@ -45,6 +46,21 @@ public class MainApp extends Application {
 	
 	@FXML
 	private ListView<String> receiverList;
+	
+	@FXML
+	private Button btMoveUp;
+	
+	@FXML
+	private Button btMoveDown;
+	
+	@FXML
+	private Button btMoveLeft;
+	
+	@FXML
+	private Button btMoveRight;
+	
+	@FXML
+	private Button btMoveStop;
 	
 	/**
 	 * open a beerbot client network connection 
@@ -163,6 +179,46 @@ public class MainApp extends Application {
 				e.printStackTrace();
 			}
 		}).start();
+	}
+	
+	/**
+	 * send a ui move bot command to the roboter
+	 * 
+	 * @param ae
+	 */
+	@FXML
+	protected void moveBot(ActionEvent ae) {
+		System.out.println(ae.getSource());
+		
+		if (!checkBotConnection()) {
+			return;
+		}
+		
+		final Integer dir;
+		if (ae.getSource() == btMoveStop) {
+			dir = 0;
+		} else if (ae.getSource() == btMoveUp) {
+			dir = 1;
+		} else if (ae.getSource() == btMoveDown) {
+			dir = 2;
+		} else if (ae.getSource() == btMoveLeft) {
+			dir = 3;
+		} else if (ae.getSource() == btMoveRight) {
+			dir = 4;
+		} else { 
+			dir = -1;
+		}
+		
+		System.out.println(dir);
+		if (dir >= 0) {
+			new Thread(() -> {
+				try {
+					client.moveCommand(dir);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}).start();
+		}
 	}
 	
 	/**
