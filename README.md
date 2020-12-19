@@ -15,6 +15,8 @@ Basis Aufgaben für die erste Version:
 
 - TinySLAM als Navigation und Mapping Algorithmus
 - YOLOvX as Object Detection Network mit eigenem Training für die Bierdose
+- KiCAD für Schaltpläne
+- FreeCAD für Bauteile und 3D Druck-Teile
 
 ### Hardware
 
