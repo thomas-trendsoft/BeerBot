@@ -13,10 +13,9 @@
 // client thread method
 //
 void* client_handler_start(void* client) {
-  int csocket = *((int*)client);
-  if (client != NULL) delete (int*)client;
+  clientinfo* cinfo = ((clientinfo*)client);
 
-  ClientHandler chandler(csocket);
+  ClientHandler chandler(cinfo->socket,cinfo->bot);
 
   // try handshake protocols
   if (chandler.handShake() < 0) {
@@ -24,6 +23,9 @@ void* client_handler_start(void* client) {
     pthread_exit(NULL);
     return 0;
   }
+
+  // free client info memory
+  delete cinfo;
 
   // handle polling commands
   chandler.handle();
@@ -40,8 +42,9 @@ void* client_handler_start(void* client) {
 //
 // default constructor
 //
-ClientHandler::ClientHandler(int socket) {
+ClientHandler::ClientHandler(int socket,BeerBot* bot) {
   this->socket = socket;
+  this->bot    = bot;
 }
 
 // free memory msg
@@ -211,7 +214,11 @@ void ClientHandler::handle() {
     // handle command messages
     } else if (msg->count("CMD")==1) {
       map<string,string> resp;
-      std::cout << *(msg->at("CMD")->value) << endl;
+      std::cout << "Command: " << *(msg->at("CMD")->value) << endl;
+      // check move command
+      if (msg->at("CMD")->value->compare("MOVE")==0) {
+        this->moveCommand(*msg);
+      }
       resp.insert(pair<string,string>("RESULT","FAKE"));
       this->sendMessage(resp);
     }
@@ -220,6 +227,25 @@ void ClientHandler::handle() {
     this->freeMsg(msg);
   }
 }
+
+// move command execution
+void ClientHandler::moveCommand(map<string,msgdata*> msg) {
+  cout << "move cmd: " << *(msg.at("DIR")->value) << endl;
+  string mdir = *(msg.at("DIR")->value);
+  // TODO make fire and forget or threads
+  if (mdir.compare("STOP")==0) {
+    this->bot->stop();
+  } else if (mdir.compare("LEFT")==0) {
+    this->bot->turnLeft();
+  } else if (mdir.compare("RIGHT")==0) {
+    this->bot->turnRight();
+  } else if (mdir.compare("FORWARD")==0) {
+    this->bot->forward();
+  } else if (mdir.compare("BACKWARD")==0) {
+    this->bot->backward();
+  }
+}
+
 
 //
 // close client connection

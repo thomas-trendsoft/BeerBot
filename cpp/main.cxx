@@ -5,6 +5,7 @@
 #include <string.h>
 #include <iostream>
 #include <math.h>
+#include <signal.h>
 #include "Eyescanner.h"
 #include "BeerBot.h"
 #include "BeerBotServer.h"
@@ -35,12 +36,12 @@ int main() {
 
   std::cout << "Raspberry Pi GPIO Setup done." << std::endl;
 
-  //BeerBot bbot = BeerBot();
-  //bbot.initialize();
-  //bbot.driveAround();
+  BeerBot* bbot = new BeerBot();
+
+  //bbot->initialize();
 
   std::cout << "Starte BeerBot Server..." << std::endl;
-  BeerBotServer server = BeerBotServer();
+  BeerBotServer server = BeerBotServer(bbot);
   server.start();
 
   while (runApp == 1) {
@@ -51,6 +52,8 @@ int main() {
   server.stop();
 
   delay(200);
+
+  delete bbot;
 
   return 0 ;
 

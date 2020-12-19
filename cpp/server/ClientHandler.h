@@ -5,13 +5,21 @@
 #include <vector>
 #include <string>
 #include <pthread.h>
+#include "BeerBot.h"
 
 using namespace std;
 
+// msg data entry
 typedef struct {
   string* key;
   string* value;
 } msgdata;
+
+// client info
+typedef struct {
+  int      socket;
+  BeerBot* bot;
+} clientinfo;
 
 void* client_handler_start(void* client);
 
@@ -23,6 +31,9 @@ class ClientHandler {
   // tcp socket
   int socket;
 
+  // bot instance
+  BeerBot* bot;
+
   // error status
   int error;
 
@@ -31,7 +42,7 @@ class ClientHandler {
 
 public:
   // default constructor
-  ClientHandler(int socket);
+  ClientHandler(int socket,BeerBot* bot);
 
   // read basic msg
   map<string,msgdata*>* readMessage();
@@ -50,6 +61,9 @@ public:
 
   // close connection and thread
   void shutdown();
+
+  // move command execution
+  void moveCommand(map<string,msgdata*> msg);
 
 };
 

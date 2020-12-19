@@ -63,6 +63,9 @@ class DriveController {
 
   EyeScanner* eye;
 
+  // stop the movement flag
+  int fstop;
+
 
 public:
   // default constructor
@@ -86,6 +89,8 @@ public:
   void turn_left(int steps);
 
   void turn_right(int steps);
+
+  void stopMove();
 
   void showStatus();
 };

@@ -19,7 +19,7 @@ import org.krieger.beerbot.data.Position;
  */
 public class BeerNetClient {
 	
-	protected static String[] moveDirs = {"STOP","FORwARD","BACKWARD","LEFT","RIGHT"};
+	protected static String[] moveDirs = {"STOP","FORWARD","BACKWARD","LEFT","RIGHT"};
 	
 	/**
 	 * client socket

@@ -3,6 +3,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <pthread.h>
+#include "BeerBot.h"
 
 //
 // server to communicate and receive commands
@@ -30,8 +31,10 @@ class BeerBotServer {
   // server running flag
   int stopServer;
 
+  BeerBot* bot;
+
 public:
-  BeerBotServer();
+  BeerBotServer(BeerBot* bot);
 
   int start();
 

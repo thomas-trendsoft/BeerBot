@@ -30,6 +30,24 @@ class BeerBot {
     // first simple drive attemp method
     void driveAround();
 
+    // drive forward
+    void forward();
+
+    // drive backward
+    void backward();
+
+    // turn left around
+    void turnLeft();
+
+    // turn left around
+    void turnRight();
+
+    // current distance measurement 
+    double checkDistance();
+
+    // stop movement
+    void stop();
+
 };
 
 #endif

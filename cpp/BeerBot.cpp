@@ -25,6 +25,37 @@ void BeerBot::initialize() {
   std::cout << "init done." << std::endl;
 }
 
+// drive forward
+void BeerBot::forward() {
+  this->driver.forward(30);
+}
+
+// drive backward
+void BeerBot::backward() {
+  this->driver.forward(30);
+}
+
+// turn left around
+void BeerBot::turnLeft() {
+  this->driver.turn_left(10);
+}
+
+// turn left around
+void BeerBot::turnRight() {
+  this->driver.turn_right(10);
+}
+
+// stop movement
+void BeerBot::stop() {
+  this->driver.stopMove();
+}
+
+// current distance measurement
+double BeerBot::checkDistance() {
+
+}
+
+
 // simple attemp to drive without collision
 void BeerBot::driveAround() {
   double mindist;

@@ -13,9 +13,9 @@
 //
 class DriveMotor {
 
-  int dcm1val = 28; // left motor
+  int dcm1val = 34; // left motor
 
-  int dcm2val = 26; // right motor
+  int dcm2val = 32; // right motor
 
   public:
     // default constructor

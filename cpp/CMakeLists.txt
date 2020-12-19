@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 project(BeerBot VERSION 0.1
   DESCRIPTION "Simple Robot Learning Project.")
 
-include_directories(mpu6050 hardware controller mapping server /usr/include)
+include_directories(mpu6050 hardware controller mapping server /usr/include .)
 link_libraries(wiringPi)
 link_libraries(pthread)
 

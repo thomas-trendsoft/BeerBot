@@ -20,7 +20,7 @@ void *beerbotserver_main_thread(void* sptr) {
 // open a new client connection
 //
 int BeerBotServer::acceptClient() {
-  int* clientSocket = new int;
+  int clientSocket;
   struct timeval tv;
 
   struct sockaddr  client_addr;
@@ -29,22 +29,27 @@ int BeerBotServer::acceptClient() {
   tv.tv_sec = (long)5;
   tv.tv_usec = 0;
 
-  if (((*clientSocket) = accept(this->serverSocket,(struct sockaddr *) &client_addr,&client_addr_size))<0)
+  if ((clientSocket = accept(this->serverSocket,(struct sockaddr *) &client_addr,&client_addr_size))<0)
   {
     perror("accept failed for client connection");
     return -1;
   }
 
   // check client socket state
-  if (*clientSocket > 0) {
-    if (pthread_create(&this->clientThreads[this->clientIdx],NULL,&client_handler_start,(void*)(clientSocket))) {
+  if (clientSocket > 0) {
+    clientinfo* cinfo = new clientinfo;
+
+    cinfo->socket = clientSocket;
+    cinfo->bot    = this->bot;
+
+    if (pthread_create(&this->clientThreads[this->clientIdx],NULL,&client_handler_start,(void*)(cinfo))) {
       perror("failed to start client thread");
       return -1;
     }
 
     this->clientIdx = (this->clientIdx + 1) % 10;
     return 1;
-  } else if (*clientSocket < 0) {
+  } else if (clientSocket < 0) {
     std::cout << "failed to select client socket" << std::endl;
     return -1;
   }
@@ -102,7 +107,11 @@ void BeerBotServer::stop() {
 //
 // default constructor
 //
-BeerBotServer::BeerBotServer() {
+BeerBotServer::BeerBotServer(BeerBot* bot) {
+
+  // save bot pointer
+  this->bot = bot;
+
   // create server socket
   this->serverSocket = socket(AF_INET, SOCK_STREAM, 0);
   if (this->serverSocket < 0) {

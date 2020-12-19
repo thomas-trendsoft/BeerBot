@@ -15,6 +15,7 @@ DriveController::DriveController() {
   this->dmpReady   = false;
   this->pos_x      = 0;
   this->pos_y      = 0;
+  this->fstop       = 0;
 }
 
 //
@@ -139,6 +140,7 @@ void DriveController::balance() {
 // drive forward for "dist" steps
 //
 void DriveController::forward(int dist) {
+  fstop = 0;
   odo_left.reset();
   odo_right.reset();
 
@@ -149,7 +151,7 @@ void DriveController::forward(int dist) {
   int    state = 4;
   double maxdist = this->eye->distance();
   std::cout << "try forward: " << dist << "/" << maxdist << std::endl;
-  while (maxdist > 12.0 && odo_left.count() < dist && odo_right.count() < dist) {
+  while (!fstop && maxdist > 12.0 && odo_left.count() < dist && odo_right.count() < dist) {
     delay(2);
     std::cout << ".";
     int lstate = odo_left.count() + odo_right.count();
@@ -172,11 +174,12 @@ void DriveController::forward(int dist) {
 // drive backward for "dist" steps
 //
 void DriveController::backward(int dist) {
+  fstop = 0;
   odo_left.reset();
   odo_right.reset();
 
   motors.backward();
-  while (odo_left.count() < dist && odo_right.count() < dist) {
+  while (!fstop && odo_left.count() < dist && odo_right.count() < dist) {
     delay(2);
   }
   motors.stop();
@@ -186,11 +189,12 @@ void DriveController::backward(int dist) {
 // turn left for given odo meter steps
 //
 void DriveController::turn_left(int steps) {
+  fstop = 0;
   odo_left.reset();
   odo_right.reset();
 
   motors.turn_left();
-  while (odo_left.count() < steps && odo_right.count() < steps) {
+  while (!fstop && odo_left.count() < steps && odo_right.count() < steps) {
     delay(2);
   }
   motors.stop();
@@ -200,12 +204,18 @@ void DriveController::turn_left(int steps) {
 // turn right for given odo meter steps
 //
 void DriveController::turn_right(int steps) {
+  fstop = 0;
   odo_left.reset();
   odo_right.reset();
 
   motors.turn_right();
-  while (odo_left.count() < steps && odo_right.count() < steps) {
+  while (!fstop && odo_left.count() < steps && odo_right.count() < steps) {
     delay(2);
   }
+  motors.stop();
+}
+
+void DriveController::stopMove() {
+  fstop = 1;
   motors.stop();
 }
