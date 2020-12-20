@@ -15,6 +15,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
@@ -30,7 +31,13 @@ public class MainApp extends Application {
 	/**
 	 * beerbot network client 
 	 */
-	private BeerNetClient client;
+	protected BeerNetClient client;
+	
+	@FXML
+	private ScannerWidget scannerController;
+	
+	@FXML
+	private MoveWidget moveController;
 	
 	@FXML
 	private Circle statLight;
@@ -38,29 +45,20 @@ public class MainApp extends Application {
 	@FXML
 	private Label statusLabel;
 	
-	@FXML 
-	private Label distLabel;
-	
 	@FXML
 	private TextField hostnameField;
 	
 	@FXML
 	private ListView<String> receiverList;
 	
-	@FXML
-	private Button btMoveUp;
 	
 	@FXML
-	private Button btMoveDown;
-	
-	@FXML
-	private Button btMoveLeft;
-	
-	@FXML
-	private Button btMoveRight;
-	
-	@FXML
-	private Button btMoveStop;
+	protected void initialize() {
+		System.out.println("set widget connections");
+		
+		scannerController.init(this);
+		moveController.init(this);
+	}
 	
 	/**
 	 * open a beerbot client network connection 
@@ -140,7 +138,7 @@ public class MainApp extends Application {
 	 * 
 	 * @return
 	 */
-	private boolean checkBotConnection() {
+	protected boolean checkBotConnection() {
 		
 		if (client == null || !client.isConnected()) {
 			Alert alert = new Alert(AlertType.WARNING);
@@ -156,69 +154,6 @@ public class MainApp extends Application {
 		}
 
 		return true;
-	}
-	
-	/**
-	 * UI Action to execute a short distance measurement
-	 * 
-	 * @param ae
-	 */
-	@FXML
-	protected void measureDistance(ActionEvent ae) {
-		System.out.println("pull distance");
-		
-		if (!checkBotConnection()) return;
-		
-		new Thread(() -> {
-			try {
-				Double dist = client.pullDistance();
-				Platform.runLater(() -> {
-					distLabel.setText(String.format("%.2f", dist));
-				});
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}).start();
-	}
-	
-	/**
-	 * send a ui move bot command to the roboter
-	 * 
-	 * @param ae
-	 */
-	@FXML
-	protected void moveBot(ActionEvent ae) {
-		System.out.println(ae.getSource());
-		
-		if (!checkBotConnection()) {
-			return;
-		}
-		
-		final Integer dir;
-		if (ae.getSource() == btMoveStop) {
-			dir = 0;
-		} else if (ae.getSource() == btMoveUp) {
-			dir = 1;
-		} else if (ae.getSource() == btMoveDown) {
-			dir = 2;
-		} else if (ae.getSource() == btMoveLeft) {
-			dir = 3;
-		} else if (ae.getSource() == btMoveRight) {
-			dir = 4;
-		} else { 
-			dir = -1;
-		}
-		
-		System.out.println(dir);
-		if (dir >= 0) {
-			new Thread(() -> {
-				try {
-					client.moveCommand(dir);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}).start();
-		}
 	}
 	
 	/**

@@ -203,13 +203,35 @@ public class BeerNetClient {
 	}
 	
 	public Double pullDistance() throws UnsupportedEncodingException, IOException {
-		output.write("LEN;11;PULL;DIST;\n".getBytes("utf-8"));
+		Message m = new Message();
 		
-		HashMap<String,String> data = readMessage();
+		m.put("PULL", "DIST");
+		this.sendMessage(m);
+		Message data = readMessage();
+		System.out.println(data.get("RESULT"));
 		
-		System.out.println(data.get("DIST"));
+		double result = -1.0;
+		if (data.containsKey("RESULT")) {
+			try {
+				result = Double.parseDouble(data.get("RESULT"));
+			} catch (NumberFormatException nfe) {
+				nfe.printStackTrace();
+			}
+		}
 		
-		return 1.0;
+		return result;
+	}
+	
+	public void eyeCalibration() throws IOException {
+		Message m = new Message();
+		
+		m.put("CMD", "EYECAL");
+		
+		this.sendMessage(m);
+		// read response
+		Message resp = this.readMessage();
+		System.out.println(resp.get("RESULT"));
+		
 	}
 	
 	/**
@@ -232,6 +254,9 @@ public class BeerNetClient {
 		m.put("DIR", dir);
 		
 		this.sendMessage(m);
+		// read response
+		Message resp = this.readMessage();
+		System.out.println(resp.get("RESULT"));
 	}
 	
 

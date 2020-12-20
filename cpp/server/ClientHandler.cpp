@@ -45,6 +45,7 @@ void* client_handler_start(void* client) {
 ClientHandler::ClientHandler(int socket,BeerBot* bot) {
   this->socket = socket;
   this->bot    = bot;
+  this->error  = 0;
 }
 
 // free memory msg
@@ -205,23 +206,39 @@ void ClientHandler::handle() {
       break;
     }
 
+    map<string,string> resp;
     // handle pull info
     if (msg->count("PULL")==1) {
-      map<string,string> resp;
-      std::cout << *(msg->at("PULL")->value) << endl;
-      resp.insert(pair<string,string>("INFO","FAKE"));
-      this->sendMessage(resp);
+      std::cout << "PULL : " << *(msg->at("PULL")->value) << endl;
+
+      if (msg->at("PULL")->value->compare("DIST")==0) {
+    	  double dist = bot->checkDistance();
+    	  resp.insert(pair<string,string>("RESULT",std::to_string(dist)));
+      } else {
+    	  resp.insert(pair<string,string>("RESULT","UNKOWN"));
+      }
+
     // handle command messages
     } else if (msg->count("CMD")==1) {
-      map<string,string> resp;
       std::cout << "Command: " << *(msg->at("CMD")->value) << endl;
+
       // check move command
       if (msg->at("CMD")->value->compare("MOVE")==0) {
         this->moveCommand(*msg);
+        resp.insert(pair<string,string>("RESULT","OK"));
+      } else if (msg->at("CMD")->value->compare("EYECAL")==0) {
+          bot->eyeCalibration();
+          resp.insert(pair<string,string>("RESULT","OK"));
+      } else {
+        resp.insert(pair<string,string>("RESULT","UNKNOWN"));
       }
-      resp.insert(pair<string,string>("RESULT","FAKE"));
-      this->sendMessage(resp);
+
+    // unknown messages
+    } else {
+    	resp.insert(pair<string,string>("RESULT","UNKOWN"));
     }
+
+    this->sendMessage(resp);
 
     // free memory
     this->freeMsg(msg);

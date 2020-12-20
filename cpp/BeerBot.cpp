@@ -25,6 +25,12 @@ void BeerBot::initialize() {
   std::cout << "init done." << std::endl;
 }
 
+void BeerBot::eyeCalibration() {
+  std::cout << std::endl << "start eye calibration..." << std::endl;
+  this->eye.calibration();
+  std::cout << "eye calibration done." << std::endl;
+}
+
 // drive forward
 void BeerBot::forward() {
   this->driver.forward(30);
@@ -32,7 +38,7 @@ void BeerBot::forward() {
 
 // drive backward
 void BeerBot::backward() {
-  this->driver.forward(30);
+  this->driver.backward(30);
 }
 
 // turn left around
@@ -52,7 +58,7 @@ void BeerBot::stop() {
 
 // current distance measurement
 double BeerBot::checkDistance() {
-
+  return this->eye.simple_scan(20);
 }
 
 

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="68.0" prefWidth="189.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.krieger.beerbot.client.ScannerWidget">
+   <children>
+      <Label text="Scanner">
+         <font>
+            <Font name="System Bold" size="13.0" />
+         </font>
+      </Label>
+      <HBox prefHeight="26.0" prefWidth="189.0">
+         <children>
+            <Label fx:id="distLabel" prefHeight="27.0" prefWidth="137.0" text="0 cm" />
+            <Button fx:id="btMeasure" minWidth="20.0" mnemonicParsing="false" onAction="#measureDistance" prefHeight="27.0" prefWidth="58.0" text="..." />
+         </children>
+      </HBox>
+      <Button fx:id="btCalibration" mnemonicParsing="false" onAction="#eyeCalibration" prefHeight="26.0" prefWidth="251.0" text="Kalibrieren" />
+   </children>
+</VBox>

@@ -42,8 +42,10 @@ class BeerBot {
     // turn left around
     void turnRight();
 
-    // current distance measurement 
+    // current distance measurement
     double checkDistance();
+
+    void eyeCalibration();
 
     // stop movement
     void stop();
