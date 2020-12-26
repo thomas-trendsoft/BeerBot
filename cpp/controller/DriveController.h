@@ -13,6 +13,7 @@
 #include <string.h>
 #include <math.h>
 #include <chrono>
+#include <mutex>
 #include <wiringPi.h>
 #include "helper_3dmath.h"
 #include "MPU6050.h"
@@ -22,11 +23,18 @@
 
 using namespace std::chrono;
 
+typedef struct {
+	double x;
+	double y;
+	double theta;
+} position;
+
 //
 // global drive controller
 //
 class DriveController {
 
+  // gyro / accleration hardware
   MPU6050 mpu;
 
   // odo meter left
@@ -53,19 +61,23 @@ class DriveController {
   // FIFO storage buffer
   uint8_t fifoBuffer[64];
 
-  // estimated x position
-  double pos_x;
+  // aktuelle position
+  position pos;
 
-  // estimated y position
-  double pos_y;
-
+  // last known odo positions
   int last_odo_diff;
 
+  // eye scanner controller interface
   EyeScanner* eye;
 
   // stop the movement flag
   int fstop;
 
+  // pos accessor mutex
+  std::mutex posMutex;
+
+  // position update thread
+  pthread_t posThread;
 
 public:
   // default constructor
@@ -75,7 +87,7 @@ public:
   void initialize(EyeScanner* eye);
 
   // try to be straight
-  void balance();
+  void balance(double dir);
 
   // util method to play with mpu data
   void updatePosition();
@@ -86,13 +98,21 @@ public:
   // drive backward for n steps
   void backward(int dist);
 
+  // turn in left direction
   void turn_left(int steps);
 
+  // turn in right direction
   void turn_right(int steps);
 
+  // disable dc motors
   void stopMove();
 
-  void showStatus();
+  // get current estimated position
+  position getStatus();
+
+  // shutdown drive controller
+  void shutdown();
+
 };
 
 #endif

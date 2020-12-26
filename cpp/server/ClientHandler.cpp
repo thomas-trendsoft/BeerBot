@@ -214,6 +214,18 @@ void ClientHandler::handle() {
       if (msg->at("PULL")->value->compare("DIST")==0) {
     	  double dist = bot->checkDistance();
     	  resp.insert(pair<string,string>("RESULT",std::to_string(dist)));
+      } else if (msg->at("PULL")->value->compare("STAT")==0) {
+    	  position pos = this->bot->currentPos();
+    	  resp.insert(pair<string,string>("RESULT","OK"));
+    	  resp.insert(pair<string,string>("X",std::to_string(pos.x)));
+    	  resp.insert(pair<string,string>("Y",std::to_string(pos.y)));
+    	  resp.insert(pair<string,string>("THETA",std::to_string(pos.theta)));
+      } else if (msg->at("PULL")->value->compare("MAP")==0) {
+    	  stringstream ss;
+
+    	  // insert map data
+
+    	  resp.insert(pair<string,string>("RESULT",ss.str()));
       } else {
     	  resp.insert(pair<string,string>("RESULT","UNKOWN"));
       }

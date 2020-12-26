@@ -106,6 +106,9 @@ void DriveMotor::stop() {
   softPwmWrite (DCM_EN1, 0);
   softPwmWrite (DCM_EN2, 0);
 
+  this->dcm1val = 34;
+  this->dcm2val = 34;
+
   digitalWrite(DCM_IN1,LOW);
   digitalWrite(DCM_IN2,LOW);
   digitalWrite(DCM_IN3,LOW);

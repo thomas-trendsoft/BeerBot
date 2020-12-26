@@ -70,8 +70,8 @@
             </Label>
             <HBox prefHeight="28.0" prefWidth="100.0">
                <children>
-                  <TextField editable="false" />
-                  <TextField editable="false" />
+                  <TextField fx:id="posX" editable="false" />
+                  <TextField fx:id="posY" editable="false" />
                </children>
             </HBox>
             <Label text="Winkel">
@@ -79,7 +79,12 @@
                   <Font size="14.0" />
                </font>
             </Label>
-            <TextField editable="false" />
+            <HBox prefHeight="0.0" prefWidth="189.0">
+               <children>
+                  <TextField fx:id="thetaVal" editable="false" />
+                  <Button mnemonicParsing="false" onAction="#pullStatus" text="..." />
+               </children>
+            </HBox>
             <VBox alignment="CENTER" prefHeight="232.0" prefWidth="152.0" VBox.vgrow="SOMETIMES" />
             <Label prefWidth="117.0" text="Steuerung">
                <font>

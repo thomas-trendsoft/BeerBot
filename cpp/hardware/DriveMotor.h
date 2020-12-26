@@ -13,7 +13,7 @@
 //
 class DriveMotor {
 
-  int dcm1val = 34; // left motor
+  int dcm1val = 32; // left motor
 
   int dcm2val = 32; // right motor
 

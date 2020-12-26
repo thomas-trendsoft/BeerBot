@@ -8,14 +8,34 @@
 #include "MPU6050_6Axis_MotionApps20.h"
 #include "DriveController.h"
 
+int stop_pos_thread = 0;
+
+void* update_position_thread(void* ctrlptr) {
+	DriveController* ctrl = (DriveController*)ctrlptr;
+
+	std::cout << "start position thread" << std::endl;
+
+	while (!stop_pos_thread) {
+		ctrl->updatePosition();
+		delay(10);
+	}
+
+	std::cout << "stop position thread" << std::endl;
+
+	pthread_exit(NULL);
+}
+
 //
 // default constructor
 //
 DriveController::DriveController() {
-  this->dmpReady   = false;
-  this->pos_x      = 0;
-  this->pos_y      = 0;
-  this->fstop       = 0;
+  this->dmpReady      = false;
+  this->pos.x         = 0.0;
+  this->pos.y         = 0.0;
+  this->pos.theta     = 0.0;
+  this->fstop         = 0;
+  this->eye           = NULL;
+  this->last_odo_diff = 0;
 }
 
 //
@@ -25,9 +45,6 @@ void DriveController::initialize(EyeScanner* eye) {
 
   // save eye scanner ref
   this->eye = eye;
-
-  this->pos_x = 0;
-  this->pos_y = 0;
 
   // initialize device
   printf("Initializing MPU6050 devices...\n");
@@ -50,8 +67,9 @@ void DriveController::initialize(EyeScanner* eye) {
       printf("DMP ready!\n");
       dmpReady = true;
       packetSize = mpu.dmpGetFIFOPacketSize();
-      std::cout << "y acc offset: " << mpu.getYAccelOffset() << std::endl;
 
+      delay(10);
+      this->updatePosition();
   } else {
       // ERROR!
       // 1 = initial memory load failed
@@ -60,13 +78,17 @@ void DriveController::initialize(EyeScanner* eye) {
       printf("DMP Initialization failed (code %d)\n", mpuStatus);
   }
 
+  // start position thread
+  pthread_create(&this->posThread,NULL,&update_position_thread,(void*)this);
+
 }
 
 //
 // show current position information
 //
-void DriveController::showStatus() {
+position DriveController::getStatus() {
   std::cout << "odo (l/r): " << odo_left.count() << "/" << odo_right.count() << std::endl;
+  return pos;
 }
 
 void DriveController::updatePosition() {
@@ -104,36 +126,50 @@ void DriveController::updatePosition() {
         double dx = c * delta * ODO_TICK_LEN;
         double dy = s * delta * ODO_TICK_LEN;
 
-        this->pos_x += dx;
-        this->pos_y += dy;
-        std::cout << "pos: " << this->pos_x << ":" << this->pos_y << ":" << (ypr[0]*180.0/M_PI) << "/" << delta << std::endl;
+        this->pos.x += dx;
+        this->pos.y += dy;
+        this->pos.theta = ypr[0];
 
         fifoCount = mpu.getFIFOCount();
       }
   }
 }
 
-void DriveController::balance() {
+void DriveController::balance(double dir) {
   int lval = motors.getMotorLeftValue();
   int rval = motors.getMotorRightValue();
-  int delta = odo_left.count() - odo_right.count();
 
-  std::cout << "u:" << delta << "/" << this->last_odo_diff << " - " << lval << ":" << rval << std::endl;
-  std::cout << "o l/r: " << odo_left.count() << "/" << odo_right.count() << std::endl;
-  // test stay forward
-  if (delta > 0) {
-      if (lval > 35) {
-        motors.setMotorLeftValue(lval-(2.0 * delta));
-      } else if (rval <= 70) {
-        motors.setMotorRightValue(rval+(2.0 * delta));
-      }
-  } else if (delta < 0) {
-    if (rval > 35) {
-      motors.setMotorRightValue(rval+(2.0 * delta));
-    } else if (lval <= 70) {
-      motors.setMotorLeftValue(lval-(2.0 * delta));
-    }
+  double Kp = 0.15;
+  double mp = this->pos.theta * 180.0 / M_PI;
+  double dv = dir * 180.0 / M_PI;
+
+  double err = dv - mp;
+
+  std::cout << "ERROR: " << err << "(" << mp << "/" << dv << ")" <<std::endl;
+
+  if (std::abs(err) > 180.0) {
+	  if (err > 0) {
+		  err = err - 360.0;
+	  } else {
+		  err = 360.0 + err;
+	  }
   }
+
+  if (std::abs(err) < 2) {
+	  motors.setMotorLeftValue(34);
+	  motors.setMotorRightValue(34);
+  } else if (err < 0) {
+	  motors.setMotorLeftValue(25);
+	  motors.setMotorRightValue(50);
+  } else if (err > 0) {
+	  motors.setMotorLeftValue(45);
+	  motors.setMotorRightValue(25);
+  }
+
+  // next step pid
+  //int u = (int)(Kp * err);
+
+
 }
 
 //
@@ -144,29 +180,24 @@ void DriveController::forward(int dist) {
   odo_left.reset();
   odo_right.reset();
 
-  mpu.resetFIFO();
   this->last_odo_diff = 0;
   motors.forward();
 
+  double direction = this->pos.theta;
   int    state = 4;
   double maxdist = this->eye->distance();
-  std::cout << "try forward: " << dist << "/" << maxdist << std::endl;
-  while (!fstop && maxdist > 12.0 && odo_left.count() < dist && odo_right.count() < dist) {
-    delay(2);
-    std::cout << ".";
-    int lstate = odo_left.count() + odo_right.count();
-    if (lstate > state) {
-      //this->balance();
-      this->updatePosition();
-      maxdist = this->eye->distance();
-      state = lstate + 2;
-    }
+  std::cout << "try forward: " << dist << "/" << maxdist << "/" << direction << std::endl;
+  while (!fstop && maxdist > 20.0 && odo_left.count() < dist && odo_right.count() < dist) {
+    delay(40);
+    this->balance(direction);
+    maxdist = this->eye->distance();
+    std::cout << "mindist: " << maxdist << std::endl;
   }
 
   std::cout << odo_left.count() << "/" << odo_right.count() << std::endl;
 
   motors.stop();
-  std::cout << "end pos: " << this->pos_x << "/" << this->pos_y << std::endl;
+  std::cout << "end pos: " << this->pos.x << "/" << this->pos.y << std::endl;
 
 }
 
@@ -218,4 +249,10 @@ void DriveController::turn_right(int steps) {
 void DriveController::stopMove() {
   fstop = 1;
   motors.stop();
+}
+
+void DriveController::shutdown() {
+	stop_pos_thread = 1;
+	delay(20);
+	mpu.reset();
 }

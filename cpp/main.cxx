@@ -36,11 +36,11 @@ int main() {
 
   std::cout << "Raspberry Pi GPIO Setup done." << std::endl;
 
-  BeerBot* bbot = new BeerBot();
-
-  //bbot->initialize();
 
   std::cout << "Starte BeerBot Server..." << std::endl;
+  BeerBot* bbot = new BeerBot();
+  bbot->initialize();
+
   BeerBotServer server = BeerBotServer(bbot);
   server.start();
 
@@ -48,6 +48,8 @@ int main() {
     delay(1000);
     std::cout << ".";
   }
+
+  bbot->shutdown();
 
   server.stop();
 

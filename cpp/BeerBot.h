@@ -47,8 +47,17 @@ class BeerBot {
 
     void eyeCalibration();
 
+    // aktuelle Position abfragen
+    position currentPos();
+
     // stop movement
     void stop();
+
+    // stop beer bot program
+    void shutdown();
+
+    // map accessor
+    TinySLAM getMap();
 
 };
 

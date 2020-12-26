@@ -6,6 +6,7 @@
 // default constructor
 //
 EyeScanner::EyeScanner() {
+	position = 0;
 }
 
 // calibration

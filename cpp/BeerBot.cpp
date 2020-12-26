@@ -14,15 +14,20 @@ void BeerBot::initialize() {
 
   driver.initialize(&this->eye);
 
-  std::cout << std::endl << "start eye calibration..." << std::endl;
-  this->eye.calibration();
-  std::cout << "eye calibration done." << std::endl;
+  //std::cout << std::endl << "start eye calibration..." << std::endl;
+  //this->eye.calibration();
+  //std::cout << "eye calibration done." << std::endl;
 
   std::cout << "init empty map..." << std::endl;
 
   mapping.init_map();
 
   std::cout << "init done." << std::endl;
+}
+
+// map accessor
+TinySLAM BeerBot::getMap() {
+	return this->mapping;
 }
 
 void BeerBot::eyeCalibration() {
@@ -33,7 +38,7 @@ void BeerBot::eyeCalibration() {
 
 // drive forward
 void BeerBot::forward() {
-  this->driver.forward(30);
+  this->driver.forward(300);
 }
 
 // drive backward
@@ -56,9 +61,20 @@ void BeerBot::stop() {
   this->driver.stopMove();
 }
 
+// stop beer bot program
+void BeerBot::shutdown() {
+	this->driver.stopMove();
+	this->driver.shutdown();
+}
+
 // current distance measurement
 double BeerBot::checkDistance() {
   return this->eye.simple_scan(20);
+}
+
+// aktuelle Position abfragen
+position BeerBot::currentPos() {
+	return this->driver.getStatus();
 }
 
 
@@ -78,7 +94,7 @@ void BeerBot::driveAround() {
 
       // step forward depends on mindist
       this->driver.forward((int)(mindist / 2.3));
-      driver.showStatus();
+      driver.getStatus();
 
       // check next distance value
       mindist = this->eye.simple_scan(20);

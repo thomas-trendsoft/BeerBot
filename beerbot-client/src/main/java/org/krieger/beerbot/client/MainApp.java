@@ -2,6 +2,8 @@ package org.krieger.beerbot.client;
 
 import java.io.IOException;
 
+import org.krieger.beerbot.data.Position;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -11,11 +13,9 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
@@ -47,6 +47,15 @@ public class MainApp extends Application {
 	
 	@FXML
 	private TextField hostnameField;
+	
+	@FXML
+	private TextField posX;
+	
+	@FXML
+	private TextField posY;
+	
+	@FXML
+	private TextField thetaVal;
 	
 	@FXML
 	private ListView<String> receiverList;
@@ -176,6 +185,27 @@ public class MainApp extends Application {
 		} else {
 			System.out.println("order beer: " + receiver);			
 		}
+	}
+	
+	@FXML
+	protected void pullStatus(ActionEvent ae) {
+		
+		if (!this.checkBotConnection()) {
+			return;
+		}
+		
+		new Thread(() -> {
+			try {
+				Position p = client.pullStatus();
+				Platform.runLater(() -> {
+					posX.setText(String.format("%.2f", p.getX()));
+					posY.setText(String.format("%.2f", p.getY()));
+					thetaVal.setText(String.format("%.2f", p.getTheta()));
+				});
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}).start();
 	}
 	
 	

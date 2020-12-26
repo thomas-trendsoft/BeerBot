@@ -19,6 +19,7 @@ import org.krieger.beerbot.data.Position;
  */
 public class BeerNetClient {
 	
+	// move direction constants
 	protected static String[] moveDirs = {"STOP","FORWARD","BACKWARD","LEFT","RIGHT"};
 	
 	/**
@@ -70,8 +71,7 @@ public class BeerNetClient {
 		Message msg = new Message();
 		msg.put("PROST", "1");
 		
-		sendMessage(msg);
-		msg = readMessage();
+		msg = queryData(msg);
 		
 		if (msg.containsKey("PROST")) {
 			this.connected = true;			
@@ -84,6 +84,11 @@ public class BeerNetClient {
 	
 	public boolean isConnected() {
 		return connected;
+	}
+	
+	private synchronized Message queryData(Message q) throws IOException {
+		this.sendMessage(q);
+		return this.readMessage();
 	}
 
 	
@@ -186,28 +191,12 @@ public class BeerNetClient {
 		return map;
 	}
 	
-	/**
-	 * pull the current status message
-	 * 
-	 * @return
-	 * @throws UnsupportedEncodingException 
-	 * @throws IOException
-	 */
-	public String pullStatus() throws UnsupportedEncodingException, IOException {
-		// send pull request
-		output.write("LEN;11;PULL;STAT;\n".getBytes("utf-8"));
-		
-		HashMap<String,String> data = readMessage();
-		
-		return data.get("STATUS");
-	}
 	
 	public Double pullDistance() throws UnsupportedEncodingException, IOException {
 		Message m = new Message();
 		
 		m.put("PULL", "DIST");
-		this.sendMessage(m);
-		Message data = readMessage();
+		Message data = queryData(m);
 		System.out.println(data.get("RESULT"));
 		
 		double result = -1.0;
@@ -227,9 +216,8 @@ public class BeerNetClient {
 		
 		m.put("CMD", "EYECAL");
 		
-		this.sendMessage(m);
 		// read response
-		Message resp = this.readMessage();
+		Message resp = this.queryData(m);
 		System.out.println(resp.get("RESULT"));
 		
 	}
@@ -253,9 +241,7 @@ public class BeerNetClient {
 		m.put("CMD", "MOVE");
 		m.put("DIR", dir);
 		
-		this.sendMessage(m);
-		// read response
-		Message resp = this.readMessage();
+		Message resp = queryData(m);
 		System.out.println(resp.get("RESULT"));
 	}
 	
@@ -286,20 +272,21 @@ public class BeerNetClient {
 	 * @throws UnsupportedEncodingException
 	 * @throws IOException
 	 */
-	public Position pullPosition() throws UnsupportedEncodingException, IOException {
+	public Position pullStatus() throws UnsupportedEncodingException, IOException {
 		double x = -9999.0,y = -9999.0,theta = -400.0;
 		
 		// send pull request
-		output.write("LEN;9;PULL;POS\n".getBytes("utf-8"));
+		Message m = new Message();
+		m.put("PULL", "STAT");
 		
-		HashMap<String,String> data = readMessage();
+		Message data = queryData(m);
 		
 		if (data.containsKey("X"))
-			x = Double.parseDouble(data.get("x"));
+			x = Double.parseDouble(data.get("X"));
 		if (data.containsKey("Y"))
-			y = Double.parseDouble(data.get("y"));
+			y = Double.parseDouble(data.get("Y"));
 		if (data.containsKey("THETA"))
-			theta = Double.parseDouble(data.get("theta"));
+			theta = Double.parseDouble(data.get("THETA"));
 		
 		return new Position(x, y, theta);
 	}	
