@@ -7,6 +7,9 @@
 #define ODO_TICKS 38.0
 #define ODO_TICK_LEN (WHEEL_LEN / ODO_TICKS)
 
+#define BAL_MAX_DIFF 18
+#define BAL_REF_VAL  28
+
 #include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
@@ -78,6 +81,15 @@ class DriveController {
 
   // position update thread
   pthread_t posThread;
+
+	// last balance direction error
+	double last_dir_err;
+
+	// last direction balance update timestamp
+	system_clock::time_point last_dir_update;
+
+	// balance integral sum
+	double balance_integral;
 
 public:
   // default constructor

@@ -139,15 +139,18 @@ void DriveController::balance(double dir) {
   int lval = motors.getMotorLeftValue();
   int rval = motors.getMotorRightValue();
 
-  double Kp = 0.15;
+	system_clock::time_point tm = system_clock::now();
+
+  double Kp = 1.4;
+	double Ki = 0.0;
+	double Kd = 2.8;
+
   double mp = this->pos.theta * 180.0 / M_PI;
   double dv = dir * 180.0 / M_PI;
 
-  double err = dv - mp;
+  double err  = dv - mp;
 
-  std::cout << "ERROR: " << err << "(" << mp << "/" << dv << ")" <<std::endl;
-
-  if (std::abs(err) > 180.0) {
+	if (std::abs(err) > 180.0) {
 	  if (err > 0) {
 		  err = err - 360.0;
 	  } else {
@@ -155,15 +158,34 @@ void DriveController::balance(double dir) {
 	  }
   }
 
+	double derr = err - last_dir_err;
+	last_dir_err = err;
+	double dt = (tm - this->last_dir_update).count();
+	this->balance_integral = this->balance_integral + err * dt;
+
+	double kpu = Kp * err;
+	double kiu = Ki * this->balance_integral;
+	double kdu = Kd * derr;
+  std::cout << "ERROR: " << err << "(" << mp << "/" << dv << "/" << last_dir_err << ")" <<std::endl;
+
+	int update = std::abs((int)(kpu + kiu + kdu));
+
+	std::cout << "Kp = " << kpu << "/ Ki = " << kiu << "/ Kd = " << kdu << " --> " << update << std::endl;
+
+	// not maximize diff to avoid drifting
+	if (update > BAL_MAX_DIFF) update = BAL_MAX_DIFF;
+
   if (std::abs(err) < 2) {
-	  motors.setMotorLeftValue(34);
-	  motors.setMotorRightValue(34);
+	  motors.setMotorLeftValue(BAL_REF_VAL);
+	  motors.setMotorRightValue(BAL_REF_VAL);
   } else if (err < 0) {
-	  motors.setMotorLeftValue(25);
-	  motors.setMotorRightValue(50);
+		std::cout << "L: " << update << std::endl;
+	  motors.setMotorLeftValue(BAL_REF_VAL - update);
+	  motors.setMotorRightValue(BAL_REF_VAL + update);
   } else if (err > 0) {
-	  motors.setMotorLeftValue(45);
-	  motors.setMotorRightValue(25);
+		std::cout << "R: " << update << std::endl;
+	  motors.setMotorLeftValue(BAL_REF_VAL + update);
+	  motors.setMotorRightValue(BAL_REF_VAL - update);
   }
 
   // next step pid
@@ -184,10 +206,15 @@ void DriveController::forward(int dist) {
   motors.forward();
 
   double direction = this->pos.theta;
-  int    state = 4;
+
+	// init PID controller
+	this->last_dir_err     = 0.0;
+	this->last_dir_update  = system_clock::now();
+	this->balance_integral = 0.0;
+
   double maxdist = this->eye->distance();
   std::cout << "try forward: " << dist << "/" << maxdist << "/" << direction << std::endl;
-  while (!fstop && maxdist > 20.0 && odo_left.count() < dist && odo_right.count() < dist) {
+  while (!fstop && maxdist > 24.0 && odo_left.count() < dist && odo_right.count() < dist) {
     delay(40);
     this->balance(direction);
     maxdist = this->eye->distance();
