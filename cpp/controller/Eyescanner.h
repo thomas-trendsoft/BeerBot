@@ -1,9 +1,11 @@
 #ifndef EYESCANNER_H_
 #define EYESCANNER_H_
 
+#include "TinySLAM.h"
 #include "Distance.h"
 #include "StepMotor.h"
 
+#define DELTA_ANGEL (M_PI / 1024.0)
 
 //
 // eye scanner controller
@@ -11,7 +13,7 @@
 class EyeScanner {
 
   // calvalue
-  int calvalue = 405;
+  int calvalue = 390;
 
   // current step motor position
   int position;
@@ -36,7 +38,7 @@ class EyeScanner {
     double simple_scan(int steps);
 
     // create a scan array for current position
-    double* scan(int steps);
+    ts_scan_t* scan(double x,double y,double theta);
 
 };
 

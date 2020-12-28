@@ -15,15 +15,6 @@ void BeerBot::initialize() {
 
   driver.initialize(&this->eye);
 
-  //std::cout << std::endl << "start eye calibration..." << std::endl;
-  //this->eye.calibration();
-  //std::cout << "eye calibration done." << std::endl;
-
-  std::cout << "init empty map..." << std::endl;
-
-  mapping.init_map();
-
-  std::cout << "init done." << std::endl;
 }
 
 // map accessor
@@ -76,6 +67,24 @@ double BeerBot::checkDistance() {
 // aktuelle Position abfragen
 position BeerBot::currentPos() {
 	return this->driver.getStatus();
+}
+
+// create a map of the current environment
+void BeerBot::exploreMap() {
+  std::cout << "start explore map" << std::endl;
+  driver.resetPosition();
+  std::cout << "init empty map..." << std::endl;
+  mapping.init_map();
+  std::cout << "init done." << std::endl;
+
+  // first scan
+  position   pos;
+  driver.getPosition(&pos);
+  ts_scan_t* scan = eye.scan(pos.x,pos.y,pos.theta);
+
+  delete scan;
+
+  std::cout << "mapping done." << std::endl;
 }
 
 

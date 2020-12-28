@@ -1,4 +1,6 @@
+#include <iostream>
 #include <chrono>
+#include <math.h>
 #include <wiringPi.h>
 #include "Eyescanner.h"
 
@@ -28,19 +30,56 @@ double EyeScanner::distance() {
   return this->dist.measure();
 }
 
-// simple min dist scan for given steps
-double* EyeScanner::scan(int steps) {
-  double* val = new double[steps*2];
+
+//
+// make a full scan with all values return
+//
+ts_scan_t* EyeScanner::scan(double x,double y,double theta) {
+	double     sval;
+	ts_scan_t* scan = new ts_scan_t;
+
+	int steps = 70;
+
+	double ldir = theta - (steps * DELTA_ANGEL * 5);
+	if (ldir < -M_PI) {
+		ldir += (2*M_PI);
+	}
 
   this->stepper.rotate(steps*5,1);
+
+	int scanidx = 0;
   for (int i=(0-steps);i<steps;i++) {
-    val[i+steps] = this->dist.measure();
+    sval = this->dist.measure();
+
+		double c = cos(ldir);
+		double s = sin(ldir);
+
+		double dx = c * sval + x;
+		double dy = s * sval + y;
+
+		scan->x[scanidx] = dx;
+		scan->y[scanidx] = dy;
+		scan->value[scanidx] = TS_OBSTACLE;
+
+		scanidx++;
+
+//		std::cout << "s" << sval << ": " << i << ": " << scanidx <<  "  -  " << (ldir * 180.0 / M_PI)  << std::endl;
+
+		ldir += DELTA_ANGEL*5;
+		if (ldir > M_PI) {
+			ldir -= (2*M_PI);
+		}
+
     this->stepper.rotate(5,-1);
   }
+
+	// turn back to center
   this->stepper.rotate(steps*5,1);
+
+	// turn off stepper motor
   this->stepper.pause();
 
-  return val;
+  return scan;
 }
 
 // simple min dist scan for given steps

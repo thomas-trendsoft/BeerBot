@@ -4,6 +4,7 @@
 
 #define SWAP(x,y) (x ^= y ^= x ^= y)
 
+// default constructor 
 TinySLAM::TinySLAM() {
 
 }

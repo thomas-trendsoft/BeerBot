@@ -48,6 +48,8 @@ class ClientHandler {
   // task thread
   pthread_t taskthread;
 
+  int long_task_id;
+
 public:
   // default constructor
   ClientHandler(int socket,BeerBot* bot);
@@ -70,11 +72,16 @@ public:
   // close connection and thread
   void shutdown();
 
-  // check if task thread is running
-  void checkTaskThread();
-
   // move command execution
   void moveCommand(map<string,msgdata*> msg);
+
+  // active long running task
+  int currentTask();
+
+  // update running task
+  void setTask(int id);
+
+  BeerBot* getBot();
 
 };
 

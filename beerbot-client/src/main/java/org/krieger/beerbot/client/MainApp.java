@@ -198,8 +198,8 @@ public class MainApp extends Application {
 			try {
 				Position p = client.pullStatus();
 				Platform.runLater(() -> {
-					posX.setText(String.format("%.2f", (p.getX() / 100.0)));
-					posY.setText(String.format("%.2f", (p.getY() / 100.0)));
+					posX.setText(String.format("%.2f", (p.getX())));
+					posY.setText(String.format("%.2f", (p.getY())));
 					thetaVal.setText(String.format("%.2f", (p.getTheta() * 180.0 / Math.PI)));
 				});
 			} catch (IOException e) {

@@ -7,7 +7,7 @@
 
 #define TS_SCAN_SIZE 1024
 #define TS_MAP_SIZE  2048
-#define TS_MAP_SCALE 0.2
+#define TS_MAP_SCALE 0.5
 #define TS_DISTANCE_NO_DETECTION 4000
 #define TS_NO_OBSTACLE 65500
 #define TS_OBSTACLE 0

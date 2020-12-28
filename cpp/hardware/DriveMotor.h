@@ -8,14 +8,16 @@
 #define DCM_EN2 9
 #define DCM_EN1 0
 
+#define START_VAL 28
+
 //
 // driving motor Controller
 //
 class DriveMotor {
 
-  int dcm1val = 32; // left motor
+  int dcm1val = START_VAL; // left motor
 
-  int dcm2val = 32; // right motor
+  int dcm2val = START_VAL; // right motor
 
   public:
     // default constructor

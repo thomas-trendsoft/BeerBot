@@ -30,6 +30,9 @@ class BeerBot {
     // first simple drive attemp method
     void driveAround();
 
+    // explore environment and create map
+    void exploreMap();
+
     // drive forward
     void forward();
 
@@ -45,6 +48,7 @@ class BeerBot {
     // current distance measurement
     double checkDistance();
 
+    // execute eye calibration 
     void eyeCalibration();
 
     // aktuelle Position abfragen

@@ -39,20 +39,18 @@ void* client_handler_start(void* client) {
   return 0;
 }
 
-int current_task = NO_TASK;
-
 // long running tasks thread
-void* client_task_thread(void* botptr) {
-  BeerBot* bot = (BeerBot*)botptr;
+void* client_task_thread(void* clientptr) {
+  ClientHandler* chandler = (ClientHandler*)clientptr;
+  BeerBot*            bot = chandler->getBot();
 
-  while (current_task != STOP_TASKS) {
-    switch (current_task) {
+  while (chandler->currentTask() != STOP_TASKS) {
+    switch (chandler->currentTask()) {
       case MAP_TASK:
-        bot->driveAround();
+        bot->exploreMap();
         break;
     }
-    std::cout << "LT" << current_task << std::endl;
-    current_task = NO_TASK;
+    chandler->setTask(NO_TASK);
     delay(1000);
   }
   std::cout << "stop client long run thread" << std::endl;
@@ -67,8 +65,8 @@ void* client_task_thread(void* botptr) {
 ClientHandler::ClientHandler(int socket,BeerBot* bot) {
   this->socket = socket;
   this->bot    = bot;
-  this->error  = 0;
-
+  this->error        = 0;
+  this->long_task_id = NO_TASK;
 }
 
 // free memory msg
@@ -113,20 +111,14 @@ map<string,msgdata*>* ClientHandler::readMessage() {
   }
 
   // parse msg len and read further bytes if needed
-  std::cout << "len msg: " << token << std::endl;
-
   token = strtok_r(save1,";",&save1);
-  std::cout << "len data: " << token << std::endl;
 
   int mlen = atoi(token);
   int limit = min(mlen,2048);
 
-  cout << "parsed: " << mlen << "/" << limit << endl;
-
   int key = 1;
   string* kval;
   while ((token = strtok_r(save1,";",&save1))) {
-    cout << "token: " << token << endl;
     if (key) {
       kval = new string(token);
       key = 0;
@@ -179,6 +171,16 @@ int ClientHandler::sendMessage(map<string,string> msg) {
 
 }
 
+// active long running task
+int ClientHandler::currentTask() {
+  return long_task_id;
+}
+
+// update running task
+void ClientHandler::setTask(int id) {
+  long_task_id = id;
+}
+
 //
 // protocol handshake
 //
@@ -202,13 +204,18 @@ int ClientHandler::handShake() {
     }
 
     // open task thread for client
-    if (pthread_create(&taskthread,NULL,&client_task_thread,(void*)(bot))) {
+    if (pthread_create(&taskthread,NULL,&client_task_thread,(void*)this)) {
       perror("failed to start client task thread");
     }
 
 
     return 0;
 }
+
+BeerBot* ClientHandler::getBot() {
+  return this->bot;
+}
+
 
 //
 // client command handling
@@ -271,7 +278,7 @@ void ClientHandler::handle() {
           bot->eyeCalibration();
           resp.insert(pair<string,string>("RESULT","OK"));
       } else if (msg->at("CMD")->value->compare("STARTMAP")==0) {
-          current_task = MAP_TASK;
+          this->setTask(MAP_TASK);
           resp.insert(pair<string,string>("RESULT","OK"));
       } else {
         resp.insert(pair<string,string>("RESULT","UNKNOWN"));
@@ -295,7 +302,7 @@ void ClientHandler::moveCommand(map<string,msgdata*> msg) {
   string mdir = *(msg.at("DIR")->value);
   // TODO make fire and forget or threads
   if (mdir.compare("STOP")==0) {
-    current_task = NO_TASK;
+    this->setTask(NO_TASK);
     this->bot->stop();
   } else if (mdir.compare("LEFT")==0) {
     this->bot->turnLeft();
@@ -314,6 +321,6 @@ void ClientHandler::moveCommand(map<string,msgdata*> msg) {
 //
 void ClientHandler::shutdown() {
   std::cout << "close client connection" << std::endl;
-  current_task = STOP_TASKS;
+  this->long_task_id = STOP_TASKS;
   close(this->socket);
 }

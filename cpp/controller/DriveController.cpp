@@ -17,8 +17,7 @@ void* update_position_thread(void* ctrlptr) {
 
 	while (!stop_pos_thread) {
 		ctrl->updatePosition();
-		std::cout << "UP";
-		delay(10);
+		delay(15);
 	}
 
 	std::cout << "stop position thread" << std::endl;
@@ -85,12 +84,24 @@ void DriveController::initialize(EyeScanner* eye) {
 
 }
 
+// set current position to 0,0
+void DriveController::resetPosition() {
+	pos.x = 0.0;
+	pos.y = 0.0;
+}
+
 //
 // show current position information
 //
 position DriveController::getStatus() {
   std::cout << "odo (l/r): " << odo_left.count() << "/" << odo_right.count() << std::endl;
   return pos;
+}
+
+void DriveController::getPosition(position* p) {
+	p->x     = pos.x;
+	p->y     = pos.y;
+	p->theta = pos.theta;
 }
 
 void DriveController::updatePosition() {
@@ -138,7 +149,7 @@ void DriveController::updatePosition() {
 
 						this->pos.x += dx;
 						this->pos.y += dy;
-					}					
+					}
 				}
 
         fifoCount = mpu.getFIFOCount();
@@ -151,7 +162,7 @@ void DriveController::balance(double dir) {
 
   double Kp = 1.4;
 	double Ki = 0.0;
-	double Kd = 2.5;
+	double Kd = 2.8;
 
   double mp = this->pos.theta * 180.0 / M_PI;
   double dv = dir * 180.0 / M_PI;
@@ -230,9 +241,9 @@ void DriveController::forward(int dist) {
     maxdist = this->eye->distance();
   }
 
-
 	motors.stop();
 	delay(200);
+
 	std::cout << odo_left.count() << "/" << odo_right.count() << std::endl;
   std::cout << "end pos: " << this->pos.x << "/" << this->pos.y << std::endl;
 

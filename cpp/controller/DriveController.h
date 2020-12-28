@@ -4,11 +4,11 @@
 #define OUTPUT_READABLE_YAWPITCHROLL
 
 #define WHEEL_LEN 23.0
-#define ODO_TICKS 38.0
+#define ODO_TICKS 40.0
 #define ODO_TICK_LEN (WHEEL_LEN / ODO_TICKS)
 
-#define BAL_MAX_DIFF 18
-#define BAL_REF_VAL  28
+#define BAL_MAX_DIFF 14
+#define BAL_REF_VAL  24
 
 #define M_STOP     0
 #define M_FORWARD  1
@@ -129,8 +129,14 @@ public:
   // disable dc motors
   void stopMove();
 
+	// copy current position
+	void getPosition(position* pos);
+
   // get current estimated position
   position getStatus();
+
+	// reset 2D Position
+	void resetPosition();
 
   // shutdown drive controller
   void shutdown();
