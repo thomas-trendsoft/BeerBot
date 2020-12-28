@@ -3,6 +3,7 @@
 #include <wiringPi.h>
 #include "BeerBot.h"
 
+
 // default constructor
 BeerBot::BeerBot() {
 
@@ -38,7 +39,7 @@ void BeerBot::eyeCalibration() {
 
 // drive forward
 void BeerBot::forward() {
-  this->driver.forward(300);
+  this->driver.forward(200);
 }
 
 // drive backward
@@ -86,14 +87,14 @@ void BeerBot::driveAround() {
   mindist = this->eye.simple_scan(20);
 
   // drive 5 test lanes
-  for (int i=0;i<5;i++) {
+  for (int i=0;i<3;i++) {
 
     // forward until blocked
     while (mindist > 28.0) {
       std::cout << mindist << std::endl;
 
       // step forward depends on mindist
-      this->driver.forward((int)(mindist / 2.3));
+      this->driver.forward((int)(mindist * 2));
       driver.getStatus();
 
       // check next distance value
@@ -106,7 +107,7 @@ void BeerBot::driveAround() {
 
     // turn until enough space for next steps
     while (mindist < 50.0) {
-      this->driver.turn_left(10);
+      this->driver.turn_left(15);
       mindist = eye.simple_scan(20);
     } // turn to space
 

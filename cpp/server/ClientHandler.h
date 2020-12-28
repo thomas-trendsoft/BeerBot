@@ -7,6 +7,11 @@
 #include <pthread.h>
 #include "BeerBot.h"
 
+#define NO_TASK    0
+#define MAP_TASK   1
+#define ORDER_TASK 2
+#define STOP_TASKS -1
+
 using namespace std;
 
 // msg data entry
@@ -40,6 +45,9 @@ class ClientHandler {
   // error msg
   string errmsg;
 
+  // task thread
+  pthread_t taskthread;
+
 public:
   // default constructor
   ClientHandler(int socket,BeerBot* bot);
@@ -61,6 +69,9 @@ public:
 
   // close connection and thread
   void shutdown();
+
+  // check if task thread is running
+  void checkTaskThread();
 
   // move command execution
   void moveCommand(map<string,msgdata*> msg);

@@ -39,6 +39,28 @@ void* client_handler_start(void* client) {
   return 0;
 }
 
+int current_task = NO_TASK;
+
+// long running tasks thread
+void* client_task_thread(void* botptr) {
+  BeerBot* bot = (BeerBot*)botptr;
+
+  while (current_task != STOP_TASKS) {
+    switch (current_task) {
+      case MAP_TASK:
+        bot->driveAround();
+        break;
+    }
+    std::cout << "LT" << current_task << std::endl;
+    current_task = NO_TASK;
+    delay(1000);
+  }
+  std::cout << "stop client long run thread" << std::endl;
+
+  pthread_exit(NULL);
+}
+
+
 //
 // default constructor
 //
@@ -46,6 +68,7 @@ ClientHandler::ClientHandler(int socket,BeerBot* bot) {
   this->socket = socket;
   this->bot    = bot;
   this->error  = 0;
+
 }
 
 // free memory msg
@@ -178,6 +201,12 @@ int ClientHandler::handShake() {
       this->freeMsg(msg);
     }
 
+    // open task thread for client
+    if (pthread_create(&taskthread,NULL,&client_task_thread,(void*)(bot))) {
+      perror("failed to start client task thread");
+    }
+
+
     return 0;
 }
 
@@ -241,6 +270,9 @@ void ClientHandler::handle() {
       } else if (msg->at("CMD")->value->compare("EYECAL")==0) {
           bot->eyeCalibration();
           resp.insert(pair<string,string>("RESULT","OK"));
+      } else if (msg->at("CMD")->value->compare("STARTMAP")==0) {
+          current_task = MAP_TASK;
+          resp.insert(pair<string,string>("RESULT","OK"));
       } else {
         resp.insert(pair<string,string>("RESULT","UNKNOWN"));
       }
@@ -263,6 +295,7 @@ void ClientHandler::moveCommand(map<string,msgdata*> msg) {
   string mdir = *(msg.at("DIR")->value);
   // TODO make fire and forget or threads
   if (mdir.compare("STOP")==0) {
+    current_task = NO_TASK;
     this->bot->stop();
   } else if (mdir.compare("LEFT")==0) {
     this->bot->turnLeft();
@@ -281,5 +314,6 @@ void ClientHandler::moveCommand(map<string,msgdata*> msg) {
 //
 void ClientHandler::shutdown() {
   std::cout << "close client connection" << std::endl;
+  current_task = STOP_TASKS;
   close(this->socket);
 }

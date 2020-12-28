@@ -198,12 +198,36 @@ public class MainApp extends Application {
 			try {
 				Position p = client.pullStatus();
 				Platform.runLater(() -> {
-					posX.setText(String.format("%.2f", p.getX()));
-					posY.setText(String.format("%.2f", p.getY()));
-					thetaVal.setText(String.format("%.2f", p.getTheta()));
+					posX.setText(String.format("%.2f", (p.getX() / 100.0)));
+					posY.setText(String.format("%.2f", (p.getY() / 100.0)));
+					thetaVal.setText(String.format("%.2f", (p.getTheta() * 180.0 / Math.PI)));
 				});
 			} catch (IOException e) {
 				e.printStackTrace();
+			}
+		}).start();
+	}
+	
+	/**
+	 * start mapping modus on beer bot 
+	 * 
+	 * @param ae
+	 */
+	@FXML
+	protected void startMapping(ActionEvent ae) {
+		
+		System.out.println("start mapping");
+		if (!this.checkBotConnection()) 
+			return;
+		
+		new Thread(()-> {
+			try {
+				client.createMap();
+			} catch (IOException e) {
+				e.printStackTrace();
+				Platform.runLater(() -> {
+					statusLabel.setText("Error: " + e.getMessage());					
+				});
 			}
 		}).start();
 	}

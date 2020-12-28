@@ -17,6 +17,7 @@ void* update_position_thread(void* ctrlptr) {
 
 	while (!stop_pos_thread) {
 		ctrl->updatePosition();
+		std::cout << "UP";
 		delay(10);
 	}
 
@@ -36,6 +37,7 @@ DriveController::DriveController() {
   this->fstop         = 0;
   this->eye           = NULL;
   this->last_odo_diff = 0;
+	this->mdir          = -1;
 }
 
 //
@@ -111,24 +113,33 @@ void DriveController::updatePosition() {
         // read a packet from FIFO
         mpu.getFIFOBytes(fifoBuffer, packetSize);
 
-        int pos = std::min(odo_left.count(),odo_right.count());
-
         // display Euler angles in degrees
         mpu.dmpGetQuaternion(&q, fifoBuffer);
         mpu.dmpGetGravity(&gravity, &q);
         mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
 
-        double c = cos(ypr[0]);
-        double s = sin(ypr[0]);
-        double delta = pos - this->last_odo_diff;
-        this->last_odo_diff = pos;
+				// update looking direction
+				this->pos.theta = ypr[0];
 
-        double dx = c * delta * ODO_TICK_LEN;
-        double dy = s * delta * ODO_TICK_LEN;
+				// get odo position
+				int pos   = std::min(odo_left.count(),odo_right.count());
+				int delta = pos - this->last_odo_diff;
 
-        this->pos.x += dx;
-        this->pos.y += dy;
-        this->pos.theta = ypr[0];
+				this->last_odo_diff = pos;
+
+				if (delta > 0) {
+					if (this->mdir == M_FORWARD) {
+						// calculate direction factors
+		        double c = cos(ypr[0]);
+		        double s = sin(ypr[0]);
+
+						double dx = c * delta * ODO_TICK_LEN;
+		        double dy = s * delta * ODO_TICK_LEN;
+
+						this->pos.x += dx;
+						this->pos.y += dy;
+					}					
+				}
 
         fifoCount = mpu.getFIFOCount();
       }
@@ -136,14 +147,11 @@ void DriveController::updatePosition() {
 }
 
 void DriveController::balance(double dir) {
-  int lval = motors.getMotorLeftValue();
-  int rval = motors.getMotorRightValue();
-
 	system_clock::time_point tm = system_clock::now();
 
   double Kp = 1.4;
 	double Ki = 0.0;
-	double Kd = 2.8;
+	double Kd = 2.5;
 
   double mp = this->pos.theta * 180.0 / M_PI;
   double dv = dir * 180.0 / M_PI;
@@ -161,36 +169,31 @@ void DriveController::balance(double dir) {
 	double derr = err - last_dir_err;
 	last_dir_err = err;
 	double dt = (tm - this->last_dir_update).count();
-	this->balance_integral = this->balance_integral + err * dt;
+	this->balance_integral = this->balance_integral + (err * dt);
 
 	double kpu = Kp * err;
 	double kiu = Ki * this->balance_integral;
 	double kdu = Kd * derr;
-  std::cout << "ERROR: " << err << "(" << mp << "/" << dv << "/" << last_dir_err << ")" <<std::endl;
+  //std::cout << "ERROR: " << err << "(" << mp << "/" << dv << "/" << last_dir_err << ")" <<std::endl;
 
 	int update = std::abs((int)(kpu + kiu + kdu));
 
-	std::cout << "Kp = " << kpu << "/ Ki = " << kiu << "/ Kd = " << kdu << " --> " << update << std::endl;
+	//std::cout << "Kp = " << kpu << "/ Ki = " << kiu << "/ Kd = " << kdu << " --> " << update << std::endl;
 
 	// not maximize diff to avoid drifting
 	if (update > BAL_MAX_DIFF) update = BAL_MAX_DIFF;
 
-  if (std::abs(err) < 2) {
-	  motors.setMotorLeftValue(BAL_REF_VAL);
-	  motors.setMotorRightValue(BAL_REF_VAL);
-  } else if (err < 0) {
-		std::cout << "L: " << update << std::endl;
-	  motors.setMotorLeftValue(BAL_REF_VAL - update);
-	  motors.setMotorRightValue(BAL_REF_VAL + update);
-  } else if (err > 0) {
-		std::cout << "R: " << update << std::endl;
-	  motors.setMotorLeftValue(BAL_REF_VAL + update);
-	  motors.setMotorRightValue(BAL_REF_VAL - update);
+  if (update != 0) {
+		if (err < 0) {
+			std::cout << "L: " << update << std::endl;
+	  	motors.setMotorLeftValue(BAL_REF_VAL - update);
+	  	motors.setMotorRightValue(BAL_REF_VAL + update);
+  	} else if (err > 0) {
+			std::cout << "R: " << update << std::endl;
+	  	motors.setMotorLeftValue(BAL_REF_VAL + update);
+	  	motors.setMotorRightValue(BAL_REF_VAL - update);
+		}
   }
-
-  // next step pid
-  //int u = (int)(Kp * err);
-
 
 }
 
@@ -202,9 +205,7 @@ void DriveController::forward(int dist) {
   odo_left.reset();
   odo_right.reset();
 
-  this->last_odo_diff = 0;
-  motors.forward();
-
+	// save current direction
   double direction = this->pos.theta;
 
 	// init PID controller
@@ -212,18 +213,27 @@ void DriveController::forward(int dist) {
 	this->last_dir_update  = system_clock::now();
 	this->balance_integral = 0.0;
 
+	// activate position updates
+	this->last_odo_diff = 0;
+	this->mdir = M_FORWARD;
+
   double maxdist = this->eye->distance();
   std::cout << "try forward: " << dist << "/" << maxdist << "/" << direction << std::endl;
+
+	// start drive
+	motors.forward();
+
+	// drive until stop signal / distance reached / or occupied
   while (!fstop && maxdist > 24.0 && odo_left.count() < dist && odo_right.count() < dist) {
     delay(40);
     this->balance(direction);
     maxdist = this->eye->distance();
-    std::cout << "mindist: " << maxdist << std::endl;
   }
 
-  std::cout << odo_left.count() << "/" << odo_right.count() << std::endl;
 
-  motors.stop();
+	motors.stop();
+	delay(200);
+	std::cout << odo_left.count() << "/" << odo_right.count() << std::endl;
   std::cout << "end pos: " << this->pos.x << "/" << this->pos.y << std::endl;
 
 }
@@ -235,6 +245,8 @@ void DriveController::backward(int dist) {
   fstop = 0;
   odo_left.reset();
   odo_right.reset();
+
+	this->mdir = M_BACKWARD;
 
   motors.backward();
   while (!fstop && odo_left.count() < dist && odo_right.count() < dist) {
@@ -251,6 +263,8 @@ void DriveController::turn_left(int steps) {
   odo_left.reset();
   odo_right.reset();
 
+	this->mdir = M_LEFT;
+
   motors.turn_left();
   while (!fstop && odo_left.count() < steps && odo_right.count() < steps) {
     delay(2);
@@ -265,6 +279,8 @@ void DriveController::turn_right(int steps) {
   fstop = 0;
   odo_left.reset();
   odo_right.reset();
+
+	this->mdir = M_RIGHT;
 
   motors.turn_right();
   while (!fstop && odo_left.count() < steps && odo_right.count() < steps) {

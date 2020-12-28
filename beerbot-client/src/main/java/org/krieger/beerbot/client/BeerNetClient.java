@@ -264,6 +264,16 @@ public class BeerNetClient {
 		
 		return data.get("MSG");
 	}
+	
+	public String createMap() throws IOException {
+		Message m = new Message();
+		
+		m.put("CMD", "STARTMAP");
+		
+		Message a = queryData(m);
+		
+		return a.get("RESULT");
+	}
 
 	/**
 	 * pull the current robot position 

@@ -29,6 +29,7 @@
                 <Button mnemonicParsing="false" onAction="#openConnection" text="Verbinden" />
                   <Circle fx:id="statLight" fill="#9aa1a8" radius="11.0" stroke="BLACK" strokeType="INSIDE" />
                   <Button mnemonicParsing="false" onAction="#clientShutdown" text="Ausschalten" />
+                  <Button mnemonicParsing="false" onAction="#startMapping" text="Karte erstellen" />
               </items>
             </ToolBar>
          </children>
@@ -70,7 +71,9 @@
             </Label>
             <HBox prefHeight="28.0" prefWidth="100.0">
                <children>
+                  <Label prefHeight="39.0" prefWidth="22.0" style="-fx-padding: 2;" text="X" />
                   <TextField fx:id="posX" editable="false" />
+                  <Label prefHeight="39.0" prefWidth="22.0" style="-fx-padding: 2;" text="Y" />
                   <TextField fx:id="posY" editable="false" />
                </children>
             </HBox>

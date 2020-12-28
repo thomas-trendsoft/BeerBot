@@ -10,6 +10,13 @@
 #define BAL_MAX_DIFF 18
 #define BAL_REF_VAL  28
 
+#define M_STOP     0
+#define M_FORWARD  1
+#define M_BACKWARD 2
+#define M_LEFT     3
+#define M_RIGHT    4
+
+
 #include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
@@ -90,6 +97,9 @@ class DriveController {
 
 	// balance integral sum
 	double balance_integral;
+
+	// moving direction flag
+	int mdir;
 
 public:
   // default constructor
