@@ -14,7 +14,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="762.0" prefWidth="936.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.krieger.beerbot.client.MainApp">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="0.0" minWidth="0.0" prefHeight="762.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.krieger.beerbot.client.MainApp">
    <top>
       <VBox prefHeight="40.0" prefWidth="782.0" BorderPane.alignment="CENTER">
          <children>
@@ -104,11 +104,11 @@
       </VBox>
    </right>
    <center>
-      <ScrollPane minHeight="200.0" minWidth="200.0" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+      <ScrollPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
         <content>
           <AnchorPane minHeight="0.0" minWidth="0.0">
                <children>
-                  <Canvas height="500.0" layoutX="54.0" layoutY="29.0" width="500.0" AnchorPane.bottomAnchor="-29.0" AnchorPane.leftAnchor="54.0" AnchorPane.rightAnchor="-54.0" AnchorPane.topAnchor="29.0" />
+                  <Canvas height="500.0" width="500.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                </children>
             </AnchorPane>
         </content>
