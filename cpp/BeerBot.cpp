@@ -71,16 +71,27 @@ position BeerBot::currentPos() {
 
 // create a map of the current environment
 void BeerBot::exploreMap() {
+  ts_position_t map_pos;
+
   std::cout << "start explore map" << std::endl;
   driver.resetPosition();
-  std::cout << "init empty map..." << std::endl;
+
   mapping.init_map();
-  std::cout << "init done." << std::endl;
+  std::cout << "init empty map..." << std::endl;
 
   // first scan
   position   pos;
   driver.getPosition(&pos);
+
   ts_scan_t* scan = eye.scan(pos.x,pos.y,pos.theta);
+
+  // init map values with first scan
+  // TODO check one position struct only and
+  map_pos.x     = pos.x;
+  map_pos.y     = pos.y;
+  map_pos.theta = pos.theta;
+
+  mapping.map_update(scan,&map_pos,124);
 
   delete scan;
 

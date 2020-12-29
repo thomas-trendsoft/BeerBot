@@ -10,6 +10,7 @@
 
 int stop_pos_thread = 0;
 
+// TODO check interrupt controlled 
 void* update_position_thread(void* ctrlptr) {
 	DriveController* ctrl = (DriveController*)ctrlptr;
 
@@ -17,7 +18,7 @@ void* update_position_thread(void* ctrlptr) {
 
 	while (!stop_pos_thread) {
 		ctrl->updatePosition();
-		delay(15);
+		delay(10);
 	}
 
 	std::cout << "stop position thread" << std::endl;

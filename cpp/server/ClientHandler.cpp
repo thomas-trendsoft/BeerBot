@@ -192,12 +192,10 @@ int ClientHandler::handShake() {
 
     // check handshake message
     if (msg->count("PROST") == 0) {
-      cout << "No prost on hand shake!" << endl;
       this->shutdown();
       this->freeMsg(msg);
       return -1;
     } else {
-      cout << "GOT HANDSHAKE" << endl;
       hello.insert(pair<string,string>("PROST","1"));
       this->sendMessage(hello);
       this->freeMsg(msg);

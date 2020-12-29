@@ -7,11 +7,11 @@
 
 #define TS_SCAN_SIZE 1024
 #define TS_MAP_SIZE  2048
-#define TS_MAP_SCALE 0.5
+#define TS_MAP_SCALE 1.0
 #define TS_DISTANCE_NO_DETECTION 4000
 #define TS_NO_OBSTACLE 65500
 #define TS_OBSTACLE 0
-#define TS_HOLE_WIDTH 600
+#define TS_HOLE_WIDTH 40
 
 // grid cell point
 typedef unsigned short ts_map_pixel_t;
