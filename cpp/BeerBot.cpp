@@ -2,6 +2,7 @@
 #include <iostream>
 #include <wiringPi.h>
 #include "BeerBot.h"
+#include "Logger.h"
 
 
 // default constructor
@@ -11,7 +12,7 @@ BeerBot::BeerBot() {
 
 // basic sensor and data initialization
 void BeerBot::initialize() {
-  std::cout << "initialize beerbot..." << std::endl;
+  Logger::log("initialize beerbot...");
 
   driver.initialize(&this->eye);
 
@@ -23,9 +24,9 @@ TinySLAM BeerBot::getMap() {
 }
 
 void BeerBot::eyeCalibration() {
-  std::cout << std::endl << "start eye calibration..." << std::endl;
+  Logger::log("start eye calibration...");
   this->eye.calibration();
-  std::cout << "eye calibration done." << std::endl;
+  Logger::log("eye calibration done.");
 }
 
 // drive forward
@@ -40,12 +41,12 @@ void BeerBot::backward() {
 
 // turn left around
 void BeerBot::turnLeft() {
-  this->driver.turn_left(10);
+  this->driver.turn_left(15);
 }
 
 // turn left around
 void BeerBot::turnRight() {
-  this->driver.turn_right(10);
+  this->driver.turn_right(15);
 }
 
 // stop movement
@@ -65,22 +66,22 @@ double BeerBot::checkDistance() {
 }
 
 // aktuelle Position abfragen
-position BeerBot::currentPos() {
-	return this->driver.getStatus();
+void BeerBot::currentPos(bb_position* pos) {
+	this->driver.getPosition(pos);
 }
 
 // create a map of the current environment
 void BeerBot::exploreMap() {
   ts_position_t map_pos;
 
-  std::cout << "start explore map" << std::endl;
+  Logger::log("start explore map");
   driver.resetPosition();
 
   mapping.init_map();
-  std::cout << "init empty map..." << std::endl;
+  Logger::log("init empty map...");
 
   // first scan
-  position   pos;
+  bb_position   pos;
   driver.getPosition(&pos);
 
   ts_scan_t* scan = eye.scan(pos.x,pos.y,pos.theta);
@@ -95,7 +96,7 @@ void BeerBot::exploreMap() {
 
   delete scan;
 
-  std::cout << "mapping done." << std::endl;
+  Logger::log("mapping done.");
 }
 
 
@@ -111,7 +112,6 @@ void BeerBot::driveAround() {
 
     // forward until blocked
     while (mindist > 28.0) {
-      std::cout << mindist << std::endl;
 
       // step forward depends on mindist
       this->driver.forward((int)(mindist * 2));
@@ -121,7 +121,7 @@ void BeerBot::driveAround() {
       mindist = this->eye.simple_scan(20);
     } // forward until blocked
 
-    std::cout << "turn around" << std::endl;
+    Logger::log("turn around");
     // stop on block
     this->driver.backward(10);
 

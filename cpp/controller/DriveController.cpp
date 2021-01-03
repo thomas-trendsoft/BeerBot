@@ -10,18 +10,14 @@
 
 int stop_pos_thread = 0;
 
-// TODO check interrupt controlled 
+// TODO check interrupt controlled
 void* update_position_thread(void* ctrlptr) {
 	DriveController* ctrl = (DriveController*)ctrlptr;
-
-	std::cout << "start position thread" << std::endl;
 
 	while (!stop_pos_thread) {
 		ctrl->updatePosition();
 		delay(10);
 	}
-
-	std::cout << "stop position thread" << std::endl;
 
 	pthread_exit(NULL);
 }
@@ -94,12 +90,11 @@ void DriveController::resetPosition() {
 //
 // show current position information
 //
-position DriveController::getStatus() {
-  std::cout << "odo (l/r): " << odo_left.count() << "/" << odo_right.count() << std::endl;
+bb_position DriveController::getStatus() {
   return pos;
 }
 
-void DriveController::getPosition(position* p) {
+void DriveController::getPosition(bb_position* p) {
 	p->x     = pos.x;
 	p->y     = pos.y;
 	p->theta = pos.theta;
@@ -186,22 +181,17 @@ void DriveController::balance(double dir) {
 	double kpu = Kp * err;
 	double kiu = Ki * this->balance_integral;
 	double kdu = Kd * derr;
-  //std::cout << "ERROR: " << err << "(" << mp << "/" << dv << "/" << last_dir_err << ")" <<std::endl;
 
 	int update = std::abs((int)(kpu + kiu + kdu));
-
-	//std::cout << "Kp = " << kpu << "/ Ki = " << kiu << "/ Kd = " << kdu << " --> " << update << std::endl;
 
 	// not maximize diff to avoid drifting
 	if (update > BAL_MAX_DIFF) update = BAL_MAX_DIFF;
 
   if (update != 0) {
 		if (err < 0) {
-			std::cout << "L: " << update << std::endl;
 	  	motors.setMotorLeftValue(BAL_REF_VAL - update);
 	  	motors.setMotorRightValue(BAL_REF_VAL + update);
   	} else if (err > 0) {
-			std::cout << "R: " << update << std::endl;
 	  	motors.setMotorLeftValue(BAL_REF_VAL + update);
 	  	motors.setMotorRightValue(BAL_REF_VAL - update);
 		}
@@ -230,7 +220,6 @@ void DriveController::forward(int dist) {
 	this->mdir = M_FORWARD;
 
   double maxdist = this->eye->distance();
-  std::cout << "try forward: " << dist << "/" << maxdist << "/" << direction << std::endl;
 
 	// start drive
 	motors.forward();
@@ -245,8 +234,6 @@ void DriveController::forward(int dist) {
 	motors.stop();
 	delay(200);
 
-	std::cout << odo_left.count() << "/" << odo_right.count() << std::endl;
-  std::cout << "end pos: " << this->pos.x << "/" << this->pos.y << std::endl;
 
 }
 

@@ -48,11 +48,11 @@ class BeerBot {
     // current distance measurement
     double checkDistance();
 
-    // execute eye calibration 
+    // execute eye calibration
     void eyeCalibration();
 
     // aktuelle Position abfragen
-    position currentPos();
+    void currentPos(bb_position* pos);
 
     // stop movement
     void stop();

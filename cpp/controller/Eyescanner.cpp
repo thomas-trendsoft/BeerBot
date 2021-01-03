@@ -60,15 +60,13 @@ ts_scan_t* EyeScanner::scan(double x,double y,double theta) {
 		scan->x[scanidx] = dx;
 		scan->y[scanidx] = dy;
 
-		// accept obstacle if not to far away 
+		// accept obstacle if not to far away
 		if (sval < 180.0) {
 			scan->value[scanidx] = TS_OBSTACLE;
 		} else {
 			scan->value[scanidx] = TS_NO_OBSTACLE;
 		}
 		scanidx++;
-
-//		std::cout << "s" << sval << ": " << i << ": " << scanidx <<  "  -  " << (ldir * 180.0 / M_PI)  << std::endl;
 
 		ldir += DELTA_ANGEL*5;
 		if (ldir > M_PI) {

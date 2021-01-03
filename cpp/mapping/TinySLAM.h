@@ -38,9 +38,9 @@ typedef struct {
 //
 class TinySLAM {
 
+public:
   ts_map_t map;
 
-public:
   TinySLAM();
 
   // init empty map

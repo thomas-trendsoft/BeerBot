@@ -2,8 +2,14 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <pthread.h>
+#include <thread>
 #include "BeerBot.h"
+#include "ClientHandler.h"
+
+typedef struct handler_entry_str {
+  ClientHandler* object;
+  std::thread*   thread;
+} handler_entry;
 
 //
 // server to communicate and receive commands
@@ -16,12 +22,6 @@ class BeerBotServer {
   // bind server address
   struct sockaddr_in serv_addr;
 
-  // main server thread
-  pthread_t serverThread;
-
-  // client threads
-  pthread_t clientThreads[10];
-
   // client descriptor
   fd_set clifds;
 
@@ -32,6 +32,10 @@ class BeerBotServer {
   int stopServer;
 
   BeerBot* bot;
+
+  int handler_idx;
+
+  handler_entry clients[10];
 
 public:
   BeerBotServer(BeerBot* bot);
@@ -44,5 +48,8 @@ public:
 
   void stop();
 
+  void main_thread();
+
+  void handle_client_thread(int cs);
 
 };

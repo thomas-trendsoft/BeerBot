@@ -133,6 +133,8 @@ public class BeerNetClient {
 		
 		String msgstr = strbuf.toString();
 		
+		System.out.println("got msg: " + msgstr);
+		
 		// read len msg
 		if (!msgstr.startsWith("LEN;")) {
 			throw new IOException("bad response: no len prefix");
@@ -182,11 +184,16 @@ public class BeerNetClient {
 	 */
 	public Map pullMap() throws UnsupportedEncodingException, IOException {
 		Map map = null;
+
+		Message m = new Message();
+		m.put("PULL", "MAP");
 		
-		// send pull request
-		output.write("LEN;9;PULL;MAP\n".getBytes("utf-8"));
+		Message data = queryData(m);
 		
-		//HashMap<String,String> data = readMessage();
+		String str = data.get("RESULT");
+		String[] numbers = str.split(";");
+		
+		System.out.println("got " + numbers.length + " pixels");
 		
 		return map;
 	}

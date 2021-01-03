@@ -10,6 +10,7 @@
 #include "BeerBot.h"
 #include "BeerBotServer.h"
 #include <wiringPi.h>
+#include "Logger.h"
 
 int runApp = 1;
 
@@ -20,7 +21,7 @@ void keyboard_int_handler(int s){
 
 int main() {
 
-  std::cout << "Start Base Setup..." << std::endl;
+  Logger::log("Start Base Setup...");
 
   struct sigaction sigIntHandler;
 
@@ -30,14 +31,14 @@ int main() {
 
   sigaction(SIGINT, &sigIntHandler, NULL);
 
-  std::cout << "Keyboard Interrupt handler registered." << std::endl;
+  Logger::log("Keyboard Interrupt handler registered.");
 
   wiringPiSetupGpio();
 
-  std::cout << "Raspberry Pi GPIO Setup done." << std::endl;
+  Logger::log("Raspberry Pi GPIO Setup done.");
 
 
-  std::cout << "Starte BeerBot Server..." << std::endl;
+  Logger::log("Starte BeerBot Server...");
   BeerBot* bbot = new BeerBot();
   bbot->initialize();
 
@@ -46,7 +47,6 @@ int main() {
 
   while (runApp == 1) {
     delay(1000);
-    std::cout << ".";
   }
 
   bbot->shutdown();

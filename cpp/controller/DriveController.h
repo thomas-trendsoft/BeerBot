@@ -33,11 +33,11 @@
 
 using namespace std::chrono;
 
-typedef struct {
+typedef struct position_str {
 	double x;
 	double y;
 	double theta;
-} position;
+} bb_position;
 
 //
 // global drive controller
@@ -72,7 +72,7 @@ class DriveController {
   uint8_t fifoBuffer[64];
 
   // aktuelle position
-  position pos;
+  bb_position pos;
 
   // last known odo positions
   int last_odo_diff;
@@ -130,10 +130,10 @@ public:
   void stopMove();
 
 	// copy current position
-	void getPosition(position* pos);
+	void getPosition(bb_position* pos);
 
   // get current estimated position
-  position getStatus();
+  bb_position getStatus();
 
 	// reset 2D Position
 	void resetPosition();

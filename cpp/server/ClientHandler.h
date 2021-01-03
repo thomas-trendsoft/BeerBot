@@ -4,7 +4,7 @@
 #include <map>
 #include <vector>
 #include <string>
-#include <pthread.h>
+#include <thread>
 #include "BeerBot.h"
 
 #define NO_TASK    0
@@ -15,9 +15,11 @@
 using namespace std;
 
 // msg data entry
-typedef struct {
-  string* key;
-  string* value;
+typedef struct msgdata_str {
+  msgdata_str() : next(NULL) {}
+  string key;
+  string value;
+  struct msgdata_str*   next;
 } msgdata;
 
 // client info
@@ -26,7 +28,6 @@ typedef struct {
   BeerBot* bot;
 } clientinfo;
 
-void* client_handler_start(void* client);
 
 //
 // client handle routines
@@ -45,9 +46,7 @@ class ClientHandler {
   // error msg
   string errmsg;
 
-  // task thread
-  pthread_t taskthread;
-
+  // long running task id
   int long_task_id;
 
 public:
@@ -55,13 +54,13 @@ public:
   ClientHandler(int socket,BeerBot* bot);
 
   // read basic msg
-  map<string,msgdata*>* readMessage();
+  msgdata* readMessage();
 
   // send basic msg
-  int sendMessage(map<string,string> msg);
+  int sendMessage(msgdata* msg);
 
   // free memory msg
-  void freeMsg(map<string,msgdata*>* msg);
+  void freeMsg(msgdata* msg);
 
   // welcome handshake for clients
   int handShake();
@@ -73,7 +72,7 @@ public:
   void shutdown();
 
   // move command execution
-  void moveCommand(map<string,msgdata*> msg);
+  void moveCommand(msgdata* msg);
 
   // active long running task
   int currentTask();
@@ -82,6 +81,8 @@ public:
   void setTask(int id);
 
   BeerBot* getBot();
+
+  void task_thread();
 
 };
 

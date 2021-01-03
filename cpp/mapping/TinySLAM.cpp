@@ -25,8 +25,6 @@ void TinySLAM::map_update(ts_scan_t* scan,ts_position_t* pos,int quality) {
   x1 = (int)floor(pos->x * TS_MAP_SCALE + 0.5);
   y1 = (int)floor(pos->y * TS_MAP_SCALE + 0.5);
 
-  std::cout << "map update: " << scan->nb_points << "(" << x1 << "/" << y1 << ")" << std::endl;
-
   // rotate scan to robot position
   for (i=0;i!=scan->nb_points;i++) {
 
@@ -56,7 +54,6 @@ void TinySLAM::map_update(ts_scan_t* scan,ts_position_t* pos,int quality) {
       q = quality;
       value = TS_OBSTACLE;
     }
-    std::cout << "laser ray: " << xp << "/" << yp << "(" << scan->x[i] << "/" << scan->y[i] << ")" << std::endl;
     this->map_laser_ray(x1,y1,x2,y2,xp,yp,value,q);
   }
 }
@@ -162,7 +159,7 @@ void TinySLAM::map_laser_ray(int x1,int y1,int x2,int y2,int xp, int yp, int val
   *ptr = ((256 - alpha) * (*ptr) + alpha * pixval) >> 8;
   if (error > 0) {
     ptr += incptry;
-    error += diago;
+    error += diag;
   } else {
     error += horiz;
   }

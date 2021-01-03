@@ -4,16 +4,41 @@
 #include <string.h>
 #include "BeerBotServer.h"
 #include "ClientHandler.h"
+#include "Logger.h"
 
-void *beerbotserver_main_thread(void* sptr) {
-  BeerBotServer* server = (BeerBotServer*)sptr;
+void BeerBotServer::main_thread() {
 
-  std::cout << "start wait for client..." << std::endl;
-  while (!server->isStopped()) {
-    int cc = server->acceptClient();
-    std::cout << "accepted client..." << cc << std::endl;
+  Logger::log("start wait for client...");
+  while (!isStopped()) {
+    int cc = acceptClient();
+    Logger::log(string("accepted client...") + std::to_string(cc) );
   }
-  pthread_exit(NULL);
+
+}
+
+//
+// client thread method
+//
+void BeerBotServer::handle_client_thread(int cs) {
+  ClientHandler chandler(cs,bot);
+
+  // try handshake protocols
+  if (chandler.handShake() < 0) {
+    Logger::log("handshake with client failed.");
+    return;
+  }
+
+  // handle polling commands
+  chandler.handle();
+
+  // close connection
+  chandler.shutdown();
+
+  // free client info memory
+  delay(3000);
+
+  Logger::log("thread ist out");
+
 }
 
 //
@@ -37,20 +62,11 @@ int BeerBotServer::acceptClient() {
 
   // check client socket state
   if (clientSocket > 0) {
-    clientinfo* cinfo = new clientinfo;
+    std::thread( [this,clientSocket] { this->handle_client_thread(clientSocket); }).detach();
 
-    cinfo->socket = clientSocket;
-    cinfo->bot    = this->bot;
-
-    if (pthread_create(&this->clientThreads[this->clientIdx],NULL,&client_handler_start,(void*)(cinfo))) {
-      perror("failed to start client thread");
-      return -1;
-    }
-
-    this->clientIdx = (this->clientIdx + 1) % 10;
     return 1;
   } else if (clientSocket < 0) {
-    std::cout << "failed to select client socket" << std::endl;
+    Logger::log("failed to select client socket");
     return -1;
   }
 
@@ -73,15 +89,12 @@ int BeerBotServer::start() {
 
   // listen for connections
   if (listen(this->serverSocket,3) < 0) {
-    std::cout << "ERROR on listen to server port" << std::endl;
+    Logger::log("ERROR on listen to server port");
     return -1;
   }
 
   // server thread start
-  if (pthread_create(&this->serverThread,NULL,&beerbotserver_main_thread,(void*)this)) {
-    std::cout << "Unable to start server main thread." << std::endl;
-    return -1;
-  }
+  std::thread( [this] { this->main_thread(); }).detach();
 
   this->stopServer = false;
 
@@ -99,7 +112,7 @@ int BeerBotServer::isStopped() {
 // stop the beerbot server
 //
 void BeerBotServer::stop() {
-  std::cout << "stop beer bot server..." << std::endl;
+  Logger::log("stop beer bot server...");
   this->stopServer = true;
   close(this->serverSocket);
 }
@@ -115,7 +128,7 @@ BeerBotServer::BeerBotServer(BeerBot* bot) {
   // create server socket
   this->serverSocket = socket(AF_INET, SOCK_STREAM, 0);
   if (this->serverSocket < 0) {
-    std::cout << "ERROR opening server socket" << std::endl;
+    Logger::log("ERROR opening server socket");
     return;
   }
 
@@ -127,7 +140,7 @@ BeerBotServer::BeerBotServer(BeerBot* bot) {
 
   // bind port
   if (bind(this->serverSocket, (struct sockaddr *) &this->serv_addr, sizeof(this->serv_addr)) < 0) {
-    std::cout << "ERROR on binding server socket" << std::endl;
+    Logger::log("ERROR on binding server socket");
     return;
   }
 

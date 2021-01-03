@@ -33,6 +33,9 @@ public class MainApp extends Application {
 	 */
 	protected BeerNetClient client;
 	
+	@FXML 
+	private MapWidget mapViewController;
+	
 	@FXML
 	private ScannerWidget scannerController;
 	
@@ -67,6 +70,8 @@ public class MainApp extends Application {
 		
 		scannerController.init(this);
 		moveController.init(this);
+		mapViewController.init(this);
+		
 	}
 	
 	/**
@@ -114,6 +119,7 @@ public class MainApp extends Application {
 						statLight.setFill(Color.RED);
 						statusLabel.setText("Fehler beim Verbinden: " + e.getMessage());						
 					});
+					if (client != null) { client.shutdown(); }
 					client = null;
 				}
 			}).start();
@@ -223,6 +229,7 @@ public class MainApp extends Application {
 		new Thread(()-> {
 			try {
 				client.createMap();
+				mapViewController.updateMap();
 			} catch (IOException e) {
 				e.printStackTrace();
 				Platform.runLater(() -> {

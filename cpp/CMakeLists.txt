@@ -9,4 +9,4 @@ link_libraries(pthread)
 
 file(GLOB SOURCES "hardware/*.cpp" "controller/*.cpp" "mpu6050/*.cpp" "mapping/*.cpp" "server/*.cpp")
 
-add_executable(BeerBot main.cxx BeerBot.cpp ${SOURCES})
+add_executable(BeerBot main.cxx Logger.cpp BeerBot.cpp ${SOURCES})
